@@ -1,26 +1,92 @@
-import express from "express";
-import path from "path";
-import mongoose from "mongoose";
-import bodyParser from "body-parser";
-import dotenv from "dotenv";
-import Promise from "bluebird";
-
-import auth from "./routes/auth";
-import users from "./routes/users";
-import books from "./routes/books";
-
+const dotenv = require('dotenv');
 dotenv.config();
-const app = express();
-app.use(bodyParser.json());
-mongoose.Promise = Promise;
-mongoose.connect(process.env.MONGODB_URL, { useMongoClient: true });
+const webServer = require('./services/web-server.js');
+const database = require('./services/database.js');
+const dbConfig = require('./config/database.js');
+const defaultThreadPoolSize = 4;
+process.env.UV_THREADPOOL_SIZE = dbConfig.hrPool.poolMax + defaultThreadPoolSize;
 
-app.use("/api/auth", auth);
-app.use("/api/users", users);
-app.use("/api/books", books);
 
-app.get("/*", (req, res) => {
-  res.sendFile(path.join(__dirname, "index.html"));
+async function startup() {
+  console.log('Starting application');
+
+  try {
+    console.log('Initializing database module');
+
+    await database.initialize();
+  } catch (err) {
+    console.error(err);
+
+    process.exit(1); // Non-zero failure code
+  }
+
+  try {
+    console.log('Initializing web server module');
+
+    await webServer.initialize();
+  } catch (err) {
+    console.error(err);
+
+    process.exit(1); // Non-zero failure code
+  }
+}
+
+startup();
+
+async function shutdown(e) {
+  let err = e;
+
+  console.log('Shutting down application');
+
+  try {
+    console.log('Closing web server module');
+
+    await webServer.close();
+  } catch (e) {
+    console.error(e);
+
+    err = err || e;
+  }
+
+  try {
+    console.log('Closing database module');
+
+    await database.close();
+  } catch (e) {
+    console.error(e);
+
+    err = err || e;
+  }
+
+  console.log('Exiting process');
+
+  if (err) {
+    process.exit(1); // Non-zero failure code
+  } else {
+    process.exit(0);
+  }
+}
+
+process.on('SIGTERM', () => {
+  console.log('Received SIGTERM');
+
+  shutdown();
 });
 
-app.listen(8080, () => console.log("Running on localhost:8080"));
+process.on('SIGINT', () => {
+  console.log('Received SIGINT');
+
+  shutdown();
+});
+
+process.on('uncaughtException', err => {
+  console.log('Uncaught exception');
+  console.error(err);
+
+  shutdown(err);
+});
+
+// app.use("/api/auth", auth);
+// app.use("/api/users", users);
+// app.use("/api/books", books);
+// app.listen(8080, () => console.log("Running on localhost:8080"));
