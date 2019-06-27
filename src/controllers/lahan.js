@@ -10,7 +10,7 @@ async function getAll(req, res, next) {
 				paginator:rows.paginator
       });
     }else{
-      const rows = (req.query.nearme!==undefined  && parseInt(req.query.nearme,10) === 1 )? await lahan.nearMe(req): await lahan.getAll(req);
+      const rows = (req.query.nearme!==undefined  && parseInt(req.query.nearme,10) === 1 )? await lahan.nearMe(req.query): await lahan.getAll(req.query);
       
       res.status(200).json({
         status:200,

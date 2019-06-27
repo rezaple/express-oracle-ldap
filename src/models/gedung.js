@@ -218,7 +218,7 @@ function setFilterNearMe(sql, params)
 
     if(params.nama !== undefined){
         const nama=params['nama'];
-        const namaCapital= strtoupper(nama);
+        const namaCapital= nama.toUpperCase();
         sql += ` AND (NAMA_GEDUNG like '%${nama}%' OR NAMA_GEDUNG like '%${namaCapital}%')`;
     }
     
