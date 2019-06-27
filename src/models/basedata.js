@@ -35,8 +35,26 @@ async function getStatusKepemilikan()
   return result.rows;
 }
 
+async function getAnalisisScore()
+{
+  let query =`SELECT ID, NAMA_KLASIFIKASI, 
+  CASE NAMA_KLASIFIKASI 
+  WHEN 'PRIMER' then 'Q1' 
+  WHEN 'SEKUNDER' then 'Q2' 
+  WHEN 'TERSIER' then 'Q3'
+  WHEN 'RESIDU' then 'Q4'
+  ELSE ''
+  END AS ALIAS FROM LA_REF_ANALISIS_SCORE_KLAS`;
+  const binds = {};
+
+  const result = await database.simpleExecute(query, binds);
+
+  return result.rows;
+}
+
 module.exports={
   getWitel : getWitel,
   getStatusKepemilikan : getStatusKepemilikan,
   getRegional : getRegional,
+  getAnalisisScore : getAnalisisScore,
 };

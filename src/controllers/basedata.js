@@ -30,6 +30,21 @@ async function getStatusKepemilikan(req, res, next) {
   }
 }
 
+async function getAnalisisScore(req, res, next) {
+  try {
+    const rows = await basedata.getAnalisisScore();
+    res.status(200).json({
+      status:200,
+			data:rows,
+    });
+  } catch (err) {
+    res.status(500).json({
+      status:500,
+      message:'Internal server error'
+    });
+  }
+}
+
 function getPenggunaan(req, res, next)
 {
   res.status(200).json({
@@ -81,4 +96,5 @@ module.exports = {
   getWitel: getWitel,
   getStatusKepemilikan: getStatusKepemilikan,
   getPenggunaan : getPenggunaan,
+  getAnalisisScore:getAnalisisScore
 }
