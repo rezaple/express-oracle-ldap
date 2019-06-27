@@ -146,6 +146,21 @@ async function getDetail(idGedung)
     return result;
 }
 
+async function getListrik(id)
+{
+    const resTagihanListrik = await database.simpleExecute(`SELECT * FROM LA_LISTRIK_GEDUNG WHERE IDGEDUNG= :ID_GEDUNG ORDER BY TANGGAL DESC`, {ID_GEDUNG: id});
+    const result =  resTagihanListrik.rows.length > 0 ? resTagihanListrik.rows.map(listrik=>transform.transformTagihanListrik(listrik)) : "";
+    return result
+}
+
+async function getAir(id)
+{
+    const resTagihanAir = await database.simpleExecute(`SELECT * FROM LA_AIR WHERE IDGEDUNG=:ID_GEDUNG ORDER BY TANGGAL DESC`, {ID_GEDUNG: id});
+    const result =  resTagihanAir.rows.length > 0 ? resTagihanAir.rows.map(air=>transform.transformTagihanAir(air) ): "";
+
+    return result;
+}
+
 function current_url(req){
     const requrl = url.format({
       protocol: req.protocol,
@@ -246,5 +261,7 @@ module.exports={
   getAll,
   getAllPagination,
   nearMe,
-  getDetail
+  getDetail,
+  getListrik,
+  getAir
 };

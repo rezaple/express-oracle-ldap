@@ -31,11 +31,6 @@ router.route('/kota/:idCity/kecamatan')
 router.route('/login')
       .post(auth.login);
 
-router.route('/gedung/:id/listrik')
-      .get(gedung.getTagihanListrik);
-router.route('/gedung/:id/air')
-      .get(gedung.getTagihanAir);
-
 //area need authenticate
 router.use(function (req, res, next) {
   const token = req.headers.authorization;
@@ -64,6 +59,10 @@ router.route('/gedung')
       .get(gedung.getAll);
 router.route('/gedung/:id')
       .get(gedung.getDetail);
+router.route('/gedung/:id/listrik')
+      .get(gedung.getTagihanListrik);
+router.route('/gedung/:id/air')
+      .get(gedung.getTagihanAir);
 router.route('/summary')
       .get(summary.getSummary);
 

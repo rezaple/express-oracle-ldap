@@ -45,7 +45,7 @@ async function getDetail(req, res, next) {
 async function getTagihanListrik(req, res, next) {
   try {
     const id = parseInt(req.params.id, 10);
-    const rows = await gedung.getTagihanListrik(id);
+    const rows = await gedung.getListrik(id);
     res.status(200).json({
       status:200,
 			data:rows,
@@ -61,7 +61,7 @@ async function getTagihanListrik(req, res, next) {
 async function getTagihanAir(req, res, next) {
   try {
     const id = parseInt(req.params.id, 10);
-    const rows = await gedung.getTagihanAir(id);
+    const rows = await gedung.getAir(id);
     res.status(200).json({
       status:200,
 			data:rows,
