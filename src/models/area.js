@@ -67,8 +67,8 @@ async function getSubDistrictsByProvince(context)
 
 
 module.exports={
-  getProvinces : getProvinces,
-  getCities : getCities,
-  getSubDistricts : getSubDistricts,
-  getSubDistrictsByProvince: getSubDistrictsByProvince
+  getProvinces,
+  getCities,
+  getSubDistricts,
+  getSubDistrictsByProvince
 };

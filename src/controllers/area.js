@@ -68,8 +68,8 @@ async function getSubDistrictsByProvince(req, res, next) {
 }
 
 module.exports = {
-  getProvinces: getProvinces,
-  getCities: getCities,
-  getSubDistricts: getSubDistricts,
-  getSubDistrictsByProvince:getSubDistrictsByProvince
+  getProvinces,
+  getCities,
+  getSubDistricts,
+  getSubDistrictsByProvince
 }

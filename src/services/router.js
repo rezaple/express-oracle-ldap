@@ -32,7 +32,6 @@ router.route('/login')
       .post(auth.login);
 
 //area need authenticate
-
 router.use(function (req, res, next) {
   const token = req.headers.authorization;
   if (token) {

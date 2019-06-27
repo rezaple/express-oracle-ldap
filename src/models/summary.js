@@ -62,5 +62,5 @@ async function getSengketaAset()
 }
 
 module.exports={
-  getSummary : getSummary,
+  getSummary,
 };

@@ -16,5 +16,5 @@ async function getSummary(req, res, next) {
 }
 
 module.exports = {
-  getSummary: getSummary
+  getSummary
 }

@@ -53,8 +53,8 @@ async function getAnalisisScore()
 }
 
 module.exports={
-  getWitel : getWitel,
-  getStatusKepemilikan : getStatusKepemilikan,
-  getRegional : getRegional,
-  getAnalisisScore : getAnalisisScore,
+  getWitel,
+  getStatusKepemilikan,
+  getRegional,
+  getAnalisisScore,
 };

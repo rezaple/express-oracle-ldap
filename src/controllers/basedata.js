@@ -92,9 +92,9 @@ async function getWitel(req, res, next) {
 }
 
 module.exports = {
-  getRegional: getRegional,
-  getWitel: getWitel,
-  getStatusKepemilikan: getStatusKepemilikan,
-  getPenggunaan : getPenggunaan,
-  getAnalisisScore:getAnalisisScore
+  getRegional,
+  getWitel,
+  getStatusKepemilikan,
+  getPenggunaan,
+  getAnalisisScore
 }
