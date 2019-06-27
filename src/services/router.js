@@ -1,5 +1,6 @@
 const express = require('express');
 const router = new express.Router();
+const jwt = require("jsonwebtoken");
 const basedata = require('../controllers/basedata');
 const auth = require('../controllers/auth');
 const summary = require('../controllers/summary');
@@ -19,21 +20,44 @@ router.route('/basedata/penggunaan')
       .get(basedata.getPenggunaan);
 router.route('/basedata/analisis-score')
       .get(basedata.getAnalisisScore);
+router.route('/provinsi')
+      .get(area.getProvinces);
+router.route('/provinsi/:idProv/kota')
+      .get(area.getCities);
+router.route('/provinsi/:idProv/kota/:idCity/kecamatan')
+      .get(area.getSubDistrictsByProvince);
+router.route('/kota/:idCity/kecamatan')
+      .get(area.getSubDistricts);
+router.route('/login')
+      .post(auth.login);
+
+//area need authenticate
+
+router.use(function (req, res, next) {
+  const token = req.headers.authorization;
+  if (token) {
+    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+      if (err) {
+        res.status(401).json({
+          status:401,
+          message:'The user credentials were incorrect.',
+        });
+      } else {
+        next();
+      }
+    });
+  } else {
+    res.status(401).json({
+      status:401,
+      message:'No Token.',
+    });
+  }
+});
+router.get('/lahan', lahan.getAll);
+router.route('/lahan/:id')
+      .get(lahan.getDetail);
 router.route('/summary')
       .get(summary.getSummary);
 
-router.route('/provinsi').get(area.getProvinces);
-
-router.route('/provinsi/:idProv/kota').get(area.getCities);
-
-router.route('/provinsi/:idProv/kota/:idCity/kecamatan').get(area.getSubDistrictsByProvince);
-
-router.route('/kota/:idCity/kecamatan').get(area.getSubDistricts);
-
-router.route('/lahan').get(lahan.getAll);
-router.route('/lahan/:id').get(lahan.getDetail);
-
-router.route('/login')
-      .post(auth.login);
 
 module.exports = router;
