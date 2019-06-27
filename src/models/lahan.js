@@ -230,7 +230,7 @@ function transformListGedung(data){
         NAMA_KEGIATAN: data.NAMA_KEGIATAN? data.NAMA_KEGIATAN:"",
         PATH_GEDUNG_IMAGE: data.PATH_GEDUNG_IMAGE? 'http://mrra.telkom.co.id/gis/assets'+data.PATH_GEDUNG_IMAGE:""
     }
-  }
+}
 
 function transformKJPPLahan(kjpp){
     return {
