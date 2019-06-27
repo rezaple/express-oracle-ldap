@@ -132,10 +132,7 @@ async function nearMe(params)
 
 async function getDetail(idAreal)
 {
-    let result={
-        'potensi_sengketa_lahan':null,
-        'list_gedung':null
-    };
+    let result={};
 
     let res = await database.simpleExecute(`SELECT a.IDAREAL,a.NAMA_LAHAN,a.ALAMAT,a.COOR_X,a.COOR_Y,a.LUAS_LAHAN, a.ID_PROPINSI, a.PROPINSI,a.ID_KOTA,a.KOTA, a.ID_KECAMATAN, a.KECAMATAN, a.ID_DESA, a.DESA, a.ID_TREG, a.TREG, a.ID_WITEL, a.WITEL, a.PATH_LAHAN_IMAGE,c.NAMA_KLASIFIKASI, h.NAMA as NAMA_STATUS_KEPEMILIKAN FROM GIS_LAHAN_MASTER a 
     left join LA_ANALISIS_SCORE b on TO_CHAR(a.\"IDAREAL\") = TO_CHAR(b.\"IDAREAL\") 

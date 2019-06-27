@@ -6,7 +6,7 @@ const auth = require('../controllers/auth');
 const summary = require('../controllers/summary');
 const area = require('../controllers/area');
 const lahan = require('../controllers/lahan');
-// const gedung = require('../controllers/gedung');
+const gedung = require('../controllers/gedung');
 
 router.route('/basedata/regional')
       .get(basedata.getRegional);
@@ -30,6 +30,11 @@ router.route('/kota/:idCity/kecamatan')
       .get(area.getSubDistricts);
 router.route('/login')
       .post(auth.login);
+
+router.route('/gedung/:id/listrik')
+      .get(gedung.getTagihanListrik);
+router.route('/gedung/:id/air')
+      .get(gedung.getTagihanAir);
 
 //area need authenticate
 router.use(function (req, res, next) {
@@ -55,6 +60,10 @@ router.use(function (req, res, next) {
 router.get('/lahan', lahan.getAll);
 router.route('/lahan/:id')
       .get(lahan.getDetail);
+router.route('/gedung')
+      .get(gedung.getAll);
+router.route('/gedung/:id')
+      .get(gedung.getDetail);
 router.route('/summary')
       .get(summary.getSummary);
 

@@ -28,8 +28,40 @@ async function getAll(req, res, next) {
 
 async function getDetail(req, res, next) {
   try {
-    const idAreal = parseInt(req.params.id, 10);
-    const rows = await gedung.getDetail(idAreal);
+    const id = parseInt(req.params.id, 10);
+    const rows = await gedung.getDetail(id);
+    res.status(200).json({
+      status:200,
+			data:rows,
+    });
+  } catch (err) {
+    res.status(500).json({
+      status:500,
+      message:err.message
+    });
+  }
+}
+
+async function getTagihanListrik(req, res, next) {
+  try {
+    const id = parseInt(req.params.id, 10);
+    const rows = await gedung.getTagihanListrik(id);
+    res.status(200).json({
+      status:200,
+			data:rows,
+    });
+  } catch (err) {
+    res.status(500).json({
+      status:500,
+      message:err.message
+    });
+  }
+}
+
+async function getTagihanAir(req, res, next) {
+  try {
+    const id = parseInt(req.params.id, 10);
+    const rows = await gedung.getTagihanAir(id);
     res.status(200).json({
       status:200,
 			data:rows,
@@ -44,5 +76,7 @@ async function getDetail(req, res, next) {
 
 module.exports = {
   getAll,
-  getDetail
+  getDetail,
+  getTagihanListrik,
+  getTagihanAir
 }
