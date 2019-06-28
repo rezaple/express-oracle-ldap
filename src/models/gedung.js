@@ -2,6 +2,11 @@ const database = require('../services/database.js');
 const transform = require('../transformers/gedung.js');
 const url = require('url');
 
+/**
+ * 
+ * @param {TODO} req 
+ * Pebaiki API penggunaan
+ */
 async function getAll(req)
 {
   const params = req.query
@@ -70,9 +75,9 @@ async function getAllPagination(req)
 
 async function nearMe(params)
 {
-    const lat =params.lat ? params.lat : -6.230361;
-    const long =params.long ? params.long : 106.816673;
-    const distance =params.distance?params.distance:5;
+    const lat = (params.lat && params.lat.length>0)? params.lat : -6.230361;
+    const long = (params.long && params.long.length>0) ? params.long : 106.816673;
+    const distance =(params.distance && params.distance.length>0)?params.distance:5;
 
     const sql=`SELECT * FROM (
         SELECT DISTINCT(a.IDGEDUNG),a.IDAREAL, a.COOR_X, a.COOR_Y, a.NAMA_GEDUNG, a.ALAMAT, a.LUAS_BANGUNAN, a.JUMLAH_LANTAI, a.SALEABLE_AREA, b.NAMA_KEGIATAN, a.PATH_GEDUNG_IMAGE,f.STATUS_KEPEMILIKAN,
@@ -174,21 +179,21 @@ function current_url(req){
 function setFilter(sql, params)
 {
     if(params.provinsi !== undefined || params.kota !== undefined || params.kec !== undefined ){
-      let administrasiInfo = ""
-        if(params.provinsi !== undefined){
+        let administrasiInfo = " WHERE a.ID_PROPINSI=31"
+        if(params.provinsi !== undefined && params.provinsi.length > 0){
             const idPropinsi=parseInt(params.provinsi,10);
             administrasiInfo = ` WHERE a.ID_PROPINSI=${idPropinsi}`;
         }
-        if(params['kota'] !== undefined){
+        if(params.kota !== undefined && params.kota.length > 0){
             const idKota=parseInt(params.kota,10);
             administrasiInfo = ` WHERE a.ID_KOTA=${idKota}`;
         }
-        if(params.kec !== undefined){
+        if(params.kec !== undefined && params.kec.length > 0){
             const idKec=parseInt(params.kec,10);
             administrasiInfo = ` WHERE a.ID_KECAMATAN=${idKec}`;
         }
         sql += administrasiInfo
-    }else if(params.witel!== undefined){
+    }else if(params.witel!== undefined && params.witel.length > 0){
         const idWitel=parseInt(params.witel,10);
         const administrasiInfo = ` WHERE a.ID_WITEL=${idWitel}`;
         sql += administrasiInfo;
@@ -196,15 +201,16 @@ function setFilter(sql, params)
         sql += ` WHERE a.ID_PROPINSI=31`;
     }
 
-    if(params.nama!== undefined){
+    if(params.nama!== undefined && params.nama.length > 0){
         const nama=params.nama;
         const namaCapital= nama.toUpperCase();
         sql += ` AND (a.NAMA_GEDUNG like '%${nama}%' OR a.NAMA_GEDUNG like '%${namaCapital}%')`;
     }
 
-    if(params.luas!== undefined){
+    if(params.luas!== undefined && params.luas.length > 0){
         const luas=params.luas.split('-');
-        sql += ` AND a.LUAS_BANGUNAN BETWEEN ${luas[0]} AND ${luas[1]}`;
+        if(luas.length ===2)
+            sql += ` AND a.LUAS_BANGUNAN BETWEEN ${luas[0]} AND ${luas[1]}`;
     }
 
     return sql;
@@ -212,12 +218,13 @@ function setFilter(sql, params)
 
 function setFilterNearMe(sql, params)
 {
-    if(params.luas!== undefined){
+    if(params.luas!== undefined && params.luas.length > 0){
         const luas = params.luas.split('-');
-        sql += ` AND LUAS_BANGUNAN BETWEEN ${luas[0]} AND ${luas[1]}`;
+        if(luas.length ===2)
+            sql += ` AND LUAS_BANGUNAN BETWEEN ${luas[0]} AND ${luas[1]}`;
     }
 
-    if(params.nama !== undefined){
+    if(params.nama !== undefined && params.nama.length > 0){
         const nama=params['nama'];
         const namaCapital= nama.toUpperCase();
         sql += ` AND (NAMA_GEDUNG like '%${nama}%' OR NAMA_GEDUNG like '%${namaCapital}%')`;
