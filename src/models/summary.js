@@ -9,7 +9,8 @@ async function getSummary(){
     sekunder: await getSummaryKlasifikasiAset('SEKUNDER'),
     tersier: await getSummaryKlasifikasiAset('TERSIER'),
     residu: await getSummaryKlasifikasiAset('RESIDU'),
-    sengketa_aset: await getSengketaAset('RESIDU')
+    sengketa_aset: await getSengketaAset(),
+    status_tanah: await getStatusTanah()
   }
   return data;
 }
@@ -59,6 +60,27 @@ async function getSengketaAset()
     const result = await database.simpleExecute(query, binds);
 
     return result.rows[0];
+}
+
+//logika ge jatuh tempo
+//yang tanggal akihirnya setahun lagi akan habis atau yang udah expired
+//jadi tgl sekarang + 1 tahun
+//tg_lakhir_database < tgl_tahun_depan 
+async function getStatusTanah()
+{
+    const date = new Date();
+    date.setFullYear(date.getFullYear() + 1)
+    const tahunJatuhTempo = date.toISOString().split('T')[0];
+    let query =`SELECT count(case when d.SKHAK = 'HGB' AND d.TANGGAL_AKHIR > TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD') then 1 end) HGB,
+    count(case when d.SKHAK = 'HP' AND d.TANGGAL_AKHIR > TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD')  then 1 end) HP,
+    count(case when d.SKHAK = 'HM' AND d.TANGGAL_AKHIR > TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD')  then 1 end) HM,
+    count(case when d.TANGGAL_AKHIR < TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD') then 1 end) JATUH_TEMPO
+    FROM GIS_LAHAN_MASTER a 
+    join LA_SERTIPIKAT_BARU d on TO_CHAR(d.IDAREAL) = TO_CHAR(a.IDAREAL)`;
+
+    const result = await database.simpleExecute(query, {});
+    return result.rows[0];
+    ;
 }
 
 module.exports={

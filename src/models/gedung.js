@@ -123,8 +123,8 @@ async function getDetail(idGedung)
                     WHEN 'RESIDU' then 'Q4'
                     ELSE null
                 END AS NAMA_KLASIFIKASI, f.NAMA as STATUS_KEP, f.DESKRIPSI, a.PATH_LAHAN_IMAGE,
-                CASE WHEN d.SKHAK  IS NULL THEN 'Tidak Ada'
-                ELSE 'Ada' END as STATUS_HGB
+                CASE WHEN d.SKHAK  IS NULL THEN 'Tidak Bersertifikat'
+                ELSE 'Bersertifikat' END as STATUS_HGB
                 FROM GIS_LAHAN_MASTER a 
                 left join LA_ANALISIS_SCORE b on TO_CHAR(a.IDAREAL) = TO_CHAR(b.IDAREAL)
                     left join LA_REF_ANALISIS_SCORE_KLAS e on TO_NUMBER(b.KLASIFIKASI) = e.ID
