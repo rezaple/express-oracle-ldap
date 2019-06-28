@@ -2,17 +2,33 @@ const database = require('../services/database.js');
 const transform = require('../transformers/lahan.js');
 const url = require('url');
 
+
+/**
+ * 
+ * @param {TODO} req 
+ * 
+ * API
+ * Summary status tanah => HGB, HGB Jatuh Tempo, Tidak Bersertifikat
+ * Asset Mapping (Q1-Q4) => isinya per regional sampe witel
+ * List Request lahan
+ * List Request Gedung
+ * Input Req Lahan
+ * Input Req Gedung
+ * Edit Req Lahan
+ * Edit Req Gedung
+ */
+
 async function getAll(req)
 {
   const params = req.query
-  let sql =`SELECT DISTINCT(a.IDAREAL), a.COOR_X, a.COOR_Y, a.NAMA_LAHAN, a.ALAMAT,a.LUAS_LAHAN, a.JUMLAH_BANGUNAN, a.GUNA_LAHAN,
+  let sql =`SELECT DISTINCT(a.IDAREAL), a.COOR_X, a.COOR_Y, a.NAMA_LAHAN, a.ALAMAT,a.LUAS_LAHAN, a.JUMLAH_BANGUNAN, a.GUNA_LAHAN, a.SALEABLE_AREA, e.NAMA_KLASIFIKASI,
   d.SKHAK, d.TANGGAL_AKHIR, CASE e.NAMA_KLASIFIKASI
       WHEN 'PRIMER' then 'Q1'
       WHEN 'SEKUNDER' then 'Q2'
       WHEN 'TERSIER' then 'Q3'
       WHEN 'RESIDU' then 'Q4'
       ELSE null
-  END AS NAMA_KLASIFIKASI, f.NAMA as STATUS_KEP, f.DESKRIPSI, a.PATH_LAHAN_IMAGE,
+  END AS NAMA_KLASIFIKASI_ALIAS, f.NAMA as STATUS_KEP, f.DESKRIPSI, a.PATH_LAHAN_IMAGE,
   CASE WHEN d.SKHAK  IS NULL THEN 'Tidak Ada'
   ELSE 'Ada' END as STATUS_HGB,
   ROW_NUMBER() OVER (ORDER BY a.IDAREAL) RN
@@ -23,9 +39,7 @@ async function getAll(req)
       left join LA_SERTIPIKAT_BARU d on TO_CHAR(d.IDAREAL) = TO_CHAR(a.IDAREAL)`;
 
   const query = setFilter(sql, params);
-
   const result = await database.simpleExecute(query, {});
-
   const transformedListLahan= await result.rows.map(lahan => transform.transformList(lahan));
 
   return transformedListLahan;
@@ -46,14 +60,14 @@ async function getAllPagination(req)
     }
 
     const sql=`SELECT DISTINCT(a.IDAREAL), a.COOR_X, a.COOR_Y, a.NAMA_LAHAN, a.ALAMAT, a.LUAS_LAHAN,
-    a.JUMLAH_BANGUNAN, a.GUNA_LAHAN, d.SKHAK, d.TANGGAL_AKHIR, 
+    a.JUMLAH_BANGUNAN, a.GUNA_LAHAN, d.SKHAK, d.TANGGAL_AKHIR, a.SALEABLE_AREA, e.NAMA_KLASIFIKASI,
     CASE e.NAMA_KLASIFIKASI
         WHEN 'PRIMER' then 'Q1'
         WHEN 'SEKUNDER' then 'Q2'
         WHEN 'TERSIER' then 'Q3'
         WHEN 'RESIDU' then 'Q4'
         ELSE null
-    END AS NAMA_KLASIFIKASI, f.NAMA as STATUS_KEP, f.DESKRIPSI, a.PATH_LAHAN_IMAGE,
+    END AS NAMA_KLASIFIKASI_ALIAS, f.NAMA as STATUS_KEP, f.DESKRIPSI, a.PATH_LAHAN_IMAGE,
     CASE WHEN d.SKHAK  IS NULL THEN 'Tidak Ada'
     ELSE 'Ada' END as STATUS_HGB,
     ROW_NUMBER() OVER (ORDER BY a.IDAREAL) RN
@@ -93,18 +107,18 @@ async function getAllPagination(req)
 
 async function nearMe(params)
 {
-    const lat =  params.lat ? params.lat : -6.230361;
-    const long =params.long ? params.long : 106.816673;
-    const distance = params.distance?params.distance:5;
+    const lat =  (params.lat && params.lat.length>0) ? params.lat : -6.230361;
+    const long = (params.long && params.long.length>0) ? params.long : 106.816673;
+    const distance = (params.distance && params.distance>0)?params.distance:5;
 
-    const sql=`SELECT * FROM (SELECT DISTINCT(a.IDAREAL), a.COOR_X, a.COOR_Y, a.NAMA_LAHAN, a.ALAMAT, a.STATUS_KEPEMILIKAN, a.LUAS_LAHAN, a.JUMLAH_BANGUNAN, a.GUNA_LAHAN,
+    const sql=`SELECT * FROM (SELECT DISTINCT(a.IDAREAL), a.COOR_X, a.COOR_Y, a.NAMA_LAHAN, a.ALAMAT, a.STATUS_KEPEMILIKAN, a.LUAS_LAHAN, a.JUMLAH_BANGUNAN, a.GUNA_LAHAN, a.SALEABLE_AREA,  e.NAMA_KLASIFIKASI,
         d.SKHAK, d.TANGGAL_AKHIR, CASE e.NAMA_KLASIFIKASI
         WHEN 'PRIMER' then 'Q1'
         WHEN 'SEKUNDER' then 'Q2'
         WHEN 'TERSIER' then 'Q3'
         WHEN 'RESIDU' then 'Q4'
         ELSE null
-    END AS NAMA_KLASIFIKASI, f.NAMA as STATUS_KEP, f.DESKRIPSI, a.PATH_LAHAN_IMAGE, 
+    END AS NAMA_KLASIFIKASI_ALIAS, f.NAMA as STATUS_KEP, f.DESKRIPSI, a.PATH_LAHAN_IMAGE, 
         CASE WHEN d.SKHAK  IS NULL THEN 'Tidak Ada'
         ELSE 'Ada' END as STATUS_HGB,
         ROUND(
@@ -190,24 +204,31 @@ function current_url(req){
     return requrl
 }
 
+/**
+ * @param {TODO} req 
+ * Filter status tanah => bersertifikat atau tidak (cek dari LA_SERTIPIKAT_BARU)
+ * Filter Tanah Kosong => ya atau tidak (dari GIS_LAHAN_MASTER dari tanah_kosong? saleable_area?)
+ * Status sertifikat => HGB, HGB Jatuh Tempo, Hak Pakai, Hak Milik (masih bingung)
+ * Filter Q1 - Q4
+ **/
 function setFilter(sql, params)
 {
     if(params.provinsi !== undefined || params.kota !== undefined || params.kec !== undefined ){
-      let administrasiInfo = ""
-        if(params.provinsi !== undefined){
+      let administrasiInfo = " WHERE a.ID_PROPINSI=31"
+        if(params.provinsi !== undefined && params.provinsi.length > 0){
             const idPropinsi=parseInt(params.provinsi,10);
             administrasiInfo = ` WHERE a.ID_PROPINSI=${idPropinsi}`;
         }
-        if(params['kota'] !== undefined){
+        if(params.kota !== undefined && params.kota.length > 0){
             const idKota=parseInt(params.kota,10);
             administrasiInfo = ` WHERE a.ID_KOTA=${idKota}`;
         }
-        if(params.kec !== undefined){
+        if(params.kec !== undefined && params.kec.length > 0){
             const idKec=parseInt(params.kec,10);
             administrasiInfo = ` WHERE a.ID_KECAMATAN=${idKec}`;
         }
         sql += administrasiInfo
-    }else if(params.witel!== undefined){
+    }else if(params.witel!== undefined && params.witel.length > 0){
         const idWitel=parseInt(params.witel,10);
         const administrasiInfo = ` WHERE a.ID_WITEL=${idWitel}`;
         sql += administrasiInfo;
@@ -215,35 +236,35 @@ function setFilter(sql, params)
         sql += ` WHERE a.ID_PROPINSI=31`;
     }
 
-    // if(params.kepemilikan!== undefined){
-    //     let paramsKep=params.kepemilikan.split(",");
-    //     for(i=0;i<count(paramsKep);i++){
-    //         paramsKep[i] = this->db->qstr(paramsKep[i]);
-    //     }
-    //     res = paramsKep.join();
+    if(params.status_tanah!== undefined && params.status_tanah.length > 0){
+        const statusTanah= params.status_tanah==1?1:0;
+        if(statusTanah===1)
+            sql += ` AND d.SKHAK IS NOT NULL`;
+        else
+            sql += ` AND d.SKHAK IS NULL`;
+    }
 
-    //     sql += ` AND STATUS_KEPEMILIKAN IN (${paramsKep})`;
-    // }
+    if(params.tanah_kosong!== undefined && params.tanah_kosong.length > 0){
+        const tanahKosong= params.tanah_kosong==1?1:0;
+        if(tanahKosong===1)
+            sql += ` AND a.SALEABLE_AREA > 0`;
+        else
+            sql += ` AND (a.SALEABLE_AREA = 0 || a.SALEABLE_AREA IS NULL)`; 
+    }
 
-    // if(params['penggunaan']!== undefined){
-    //     paramsPenggunaan=this->dataFilterPenggunaan(params['penggunaan']);
-    //     res='';
-    //     i = 0;
-    //     len = count(paramsPenggunaan);
-    //     foreach (paramsPenggunaan as item) {
-    //         if (i == len - 1) {
-    //             res.="'item'";
-    //         }else{
-    //             res.="'item',";
-    //         }
-    //         i++;
-    //     }
+    if(params.status_sertifikat!== undefined && params.status_sertifikat.length > 0){
+        const dataStatusSertifikat= params.status_sertifikat.split(',');
+        const statusSertifikat = dataKlasifikasi.map(x => "'" + x + "'").toString();
+        //sql += ` AND ?? IN (${statusSertifikat})`;
+    }
 
-    //     penggunaan = " AND a.GUNA_LAHAN IN (res)";
-    //     sql .= penggunaan;
-    // }
+    if(params.klasifikasi!== undefined && params.klasifikasi.length > 0){
+        const dataKlasifikasi= params.klasifikasi.split(',');
+        const klasifikasi = dataKlasifikasi.map(x => "'" + x.toUpperCase() + "'").toString();
+        sql += ` AND e.NAMA_KLASIFIKASI IN (${klasifikasi})`;
+    }
 
-    if(params.nama!== undefined){
+    if(params.nama!== undefined && params.nama.length > 0){
         const nama=params.nama;
         const namaCapital= nama.toUpperCase();
         sql += ` AND (a.NAMA_LAHAN like '%${nama}%' OR a.NAMA_LAHAN like '%${namaCapital}%')`;
@@ -251,7 +272,8 @@ function setFilter(sql, params)
 
     if(params.luas!== undefined){
         const luas=params.luas.split('-');
-        sql += ` AND a.LUAS_LAHAN BETWEEN ${luas[0]} AND ${luas[1]}`;
+        if(luas.length ==2)
+            sql += ` AND a.LUAS_LAHAN BETWEEN ${luas[0]} AND ${luas[1]}`;
     }
 
     return sql;
@@ -259,41 +281,41 @@ function setFilter(sql, params)
 
 function setFilterNearMe(sql, params)
 {
-    // if(params['kepemilikan']!== undefined){
-    //     paramsKep=explode(',',params['kepemilikan']);
-    //     for($i=0;$i<count(paramsKep);$i++){
-    //         paramsKep[$i] = $this->db->qstr(paramsKep[$i]);
-    //     }
-    //     $res = join(',',paramsKep);
-        
-    //     $kepemilikan = " AND STATUS_KEPEMILIKAN IN ($res)";
-    //     $sql .= $kepemilikan;
-    // }
-
-    // if(params['penggunaan']!== undefined){
-    //     paramsPenggunaan=$this->dataFilterPenggunaan(params['penggunaan']);
-    //     $res='';
-    //     $i = 0;
-    //     $len = count(paramsPenggunaan);
-    //     foreach (paramsPenggunaan as $item) {
-    //         if ($i == $len - 1) {
-    //            $res.="'$item'";
-    //         }else{
-    //             $res.="'$item',";
-    //         }
-    //         $i++;
-    //     }
-
-    //     $penggunaan = " AND GUNA_LAHAN IN ($res)";
-    //     $sql .= $penggunaan;
-    // }
-
-    if(params.luas!== undefined){
-        const luas = params.luas.split('-');
-        sql += ` AND LUAS_LAHAN BETWEEN ${luas[0]} AND ${luas[1]}`;
+    if(params.status_tanah!== undefined && params.status_tanah.length > 0){
+        const statusTanah= params.status_tanah==1?1:0;
+        if(statusTanah===1)
+            sql += ` AND SKHAK IS NOT NULL`;
+        else
+            sql += ` AND SKHAK IS NULL`;
     }
 
-    if(params.nama !== undefined){
+    if(params.tanah_kosong!== undefined && params.tanah_kosong.length > 0){
+        const tanahKosong= params.tanah_kosong==1?1:0;
+        if(tanahKosong===1)
+            sql += ` AND SALEABLE_AREA > 0`;
+        else
+            sql += ` AND (SALEABLE_AREA = 0 || SALEABLE_AREA IS NULL)`; 
+    }
+
+    if(params.status_sertifikat!== undefined && params.status_sertifikat.length > 0){
+        const dataStatusSertifikat= params.status_sertifikat.split(',');
+        const statusSertifikat = dataKlasifikasi.map(x => "'" + x + "'").toString();
+        //sql += ` AND ?? IN (${statusSertifikat})`;
+    }
+
+    if(params.klasifikasi!== undefined && params.klasifikasi.length > 0){
+        const dataKlasifikasi= params.klasifikasi.split(',');
+        const klasifikasi = dataKlasifikasi.map(x => "'" + x.toUpperCase() + "'").toString();
+        sql += ` AND NAMA_KLASIFIKASI IN (${klasifikasi})`;
+    }
+
+    if(params.luas!== undefined && params.luas.length > 0){
+        const luas = params.luas.split('-');
+        if(luas.length ==2)
+            sql += ` AND LUAS_LAHAN BETWEEN ${luas[0]} AND ${luas[1]}`;
+    }
+
+    if(params.nama !== undefined && params.nama.length > 0){
         const nama=params['nama'];
         const namaCapital= nama.toUpperCase();
         sql += ` AND (NAMA_LAHAN like '%${nama}%' OR NAMA_LAHAN like '%${namaCapital}%')`;
@@ -323,16 +345,32 @@ function setParams(params)
         dataParams+= '&provinsi=31';
     }
 
-    if(params.kepemilikan !==undefined){
-        dataParams+= '&kepemilikan='.params.kepemilikan;
+    if(params.status_tanah !==undefined){
+        const statusTanah=params.status_tanah==1?1:0;
+        dataParams+= '&status_tanah='+statusTanah;
     }
 
-    if(params['luas']!==undefined){
-        dataParams+= '&luas='.params.luas;
+    if(params.tanah_kosong !==undefined){
+        const tanahKosong=params.tanah_kosong==1?1:0;
+        dataParams+= '&tanah_kosong='+tanahKosong;
+    }
+
+    if(params.status_sertifikat !==undefined){
+        const statusSertifikat=params.status_sertifikat;
+        dataParams+= '&status_sertifikat='+statusSertifikat;
+    }
+
+    if(params.klasifikasi !==undefined){
+        const klasifikasi=params.klasifikasi;
+        dataParams+= '&klasifikasi='+klasifikasi;
+    }
+
+    if(params.luas!==undefined){
+        dataParams+= '&luas='+params.luas;
     }
 
     if(params.nama!==undefined){
-        dataParams+= '&nama='.params.nama;
+        dataParams+= '&nama='+params.nama;
     }
 
     return dataParams;

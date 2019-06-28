@@ -10,7 +10,7 @@ function transformList(lahan){
         GUNA_LAHAN: lahan.GUNA_LAHAN?lahan.GUNA_LAHAN:"",
         SKHAK: lahan.SKHAK?lahan.SKHAK:"",
         TANGGAL_AKHIR: lahan.TANGGAL_AKHIR?lahan.TANGGAL_AKHIR:"",
-        NAMA_KLASIFIKASI: lahan.NAMA_KLASIFIKASI?lahan.NAMA_KLASIFIKASI:"",
+        NAMA_KLASIFIKASI: lahan.NAMA_KLASIFIKASI_ALIAS?lahan.NAMA_KLASIFIKASI_ALIAS:"",
         STATUS_KEP: lahan.STATUS_KEP?lahan.STATUS_KEP:"",
         DESKRIPSI: lahan.DESKRIPSI?lahan.DESKRIPSI:"",
         PATH_LAHAN_IMAGE: lahan.PATH_LAHAN_IMAGE? 'http://mrra.telkom.co.id/gis/assets'+lahan.PATH_LAHAN_IMAGE:"",
@@ -151,8 +151,7 @@ function transformLahanMaster(lahan){
     TREG:lahan.TREG?lahan.TREG:"",
     ID_WITEL:lahan.ID_WITEL?parseInt(lahan.ID_WITEL,10):0,
     WITEL:lahan.WITEL?lahan.WITEL:"",
-    NAMA_KLASIFIKASI: lahan.NAMA_KLASIFIKASI?lahan.NAMA_KLASIFIKASI:"",
-    NAMA_KLASIFIKASI:lahan.NAMA_KLASIFIKASI?lahan.NAMA_KLASIFIKASI:"",
+    NAMA_KLASIFIKASI: lahan.NAMA_KLASIFIKASI_ALIAS?lahan.NAMA_KLASIFIKASI_ALIAS:"",
     NAMA_STATUS_KEPEMILIKAN: lahan.NAMA_STATUS_KEPEMILIKAN?lahan.NAMA_STATUS_KEPEMILIKAN:"",
     PATH_LAHAN_IMAGE: lahan.PATH_LAHAN_IMAGE? 'http://mrra.telkom.co.id/gis/assets'+lahan.PATH_LAHAN_IMAGE:"",
     }
