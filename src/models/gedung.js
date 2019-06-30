@@ -96,7 +96,6 @@ async function nearMe(params)
         left join LA_LAHAN f on TO_CHAR(f.IDAREAL) = TO_CHAR(a.IDAREAL) ) x WHERE DISTANCE <=${distance}`;
 
     const query = setFilterNearMe(sql, params);
-    return query;
     const result = await database.simpleExecute(query, {});
     const transformedList= await result.rows.map(gedung => transform.transformList(gedung));
 
