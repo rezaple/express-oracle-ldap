@@ -199,8 +199,44 @@ async function getDetail(idAreal)
     return result;
 }
 
+/**
+ * 1 :{
+ *  nama:''
+ *  data:[
+ *     0:{
+ *     },
+ *     1:{
+ *     }
+ *  ]
+ * }
+ */
 async function detailAsetLahan(){
+    const res = await database.simpleExecute(`SELECT count(IDAREAL) as total_lahan, WILAYAH_TELKOM, TELKOM_REGIONAL FROM LA_LAHAN WHERE WILAYAH_TELKOM IS NOT NULL GROUP BY WILAYAH_TELKOM, TELKOM_REGIONAL ORDER BY TELKOM_REGIONAL ASC`, {});
+    const result=[];
+     res.rows.map(aset => {
+        if(result[aset.TELKOM_REGIONAL]===undefined){
+            result[aset.TELKOM_REGIONAL]={
+                id:aset.TELKOM_REGIONAL,
+                nama:`Regional ${aset.TELKOM_REGIONAL}`,
+                total:0,
+                witels:[{
+                    id:aset.WILAYAH_TELKOM,
+                    nama:`Witel ${aset.WILAYAH_TELKOM}`,
+                    total: aset.TOTAL_LAHAN
+                }]
+            }
+        }else{
+            result[aset.TELKOM_REGIONAL].total += aset.TOTAL_LAHAN
 
+            result[aset.TELKOM_REGIONAL].witels.push({
+                id:aset.WILAYAH_TELKOM,
+                nama:`Witel ${aset.WILAYAH_TELKOM}`,
+                total: aset.TOTAL_LAHAN
+            })
+        }
+        
+    })
+    return result.filter(function() { return true; });
 }
 
 function current_url(req){
@@ -388,5 +424,6 @@ module.exports={
   getAll,
   getAllPagination,
   nearMe,
-  getDetail
+  getDetail,
+  detailAsetLahan
 };

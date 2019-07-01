@@ -53,6 +53,7 @@ router.use(function (req, res, next) {
   }
 });
 router.get('/lahan', lahan.getAll);
+router.get('/lahan/aset', lahan.getDetailAsetLahan);
 router.route('/lahan/:id')
       .get(lahan.getDetail);
 router.route('/gedung')

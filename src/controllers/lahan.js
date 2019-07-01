@@ -50,7 +50,24 @@ async function getDetail(req, res, next) {
   }
 }
 
+async function getDetailAsetLahan(req, res, next) {
+  try {
+    const rows = await lahan.detailAsetLahan();
+      res.status(200).json({
+        status:200,
+        data:rows,
+      });
+    
+  } catch (err) {
+    res.status(500).json({
+      status:500,
+      message:err.message
+    });
+  }
+}
+
 module.exports = {
   getAll,
-  getDetail
+  getDetail,
+  getDetailAsetLahan
 }
