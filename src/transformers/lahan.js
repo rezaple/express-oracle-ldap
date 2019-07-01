@@ -11,10 +11,10 @@ function transformList(lahan){
         SKHAK: lahan.SKHAK?lahan.SKHAK:"",
         TANGGAL_AKHIR: lahan.TANGGAL_AKHIR?lahan.TANGGAL_AKHIR:"",
         NAMA_KLASIFIKASI: lahan.NAMA_KLASIFIKASI_ALIAS?lahan.NAMA_KLASIFIKASI_ALIAS:"",
-        STATUS_KEP: lahan.STATUS_KEP?lahan.STATUS_KEP:"",
-        DESKRIPSI: lahan.DESKRIPSI?lahan.DESKRIPSI:"",
+        STATUS_SERTIFIKAT: lahan.STATUS_KEP?lahan.STATUS_KEP:"",
+        //DESKRIPSI: lahan.DESKRIPSI?lahan.DESKRIPSI:"",
         PATH_LAHAN_IMAGE: lahan.PATH_LAHAN_IMAGE? 'http://mrra.telkom.co.id/gis/assets'+lahan.PATH_LAHAN_IMAGE:"",
-        STATUS_HGB: lahan.STATUS_HGB?lahan.STATUS_HGB:"",
+        STATUS_TAHAN: lahan.STATUS_HGB?lahan.STATUS_HGB:"",
         STATUS_LAHAN: lahan.SALEABLE_AREA===0?'Lahan Terisi':'Lahan Kosong',
         RN: lahan.RN,
         DISTANCE: lahan.DISTANCE

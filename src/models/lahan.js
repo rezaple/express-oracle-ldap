@@ -17,9 +17,10 @@ const url = require('url');
  * Edit Req Lahan
  * Edit Req Gedung
  */
-
+//f.NAMA as STATUS_KEP
 async function getAll(req)
 {
+  const tahunJatuhTempo= getJatuhTempo()
   const params = req.query
   let sql =`SELECT DISTINCT(a.IDAREAL), a.COOR_X, a.COOR_Y, a.NAMA_LAHAN, a.ALAMAT,a.LUAS_LAHAN, a.JUMLAH_BANGUNAN, a.GUNA_LAHAN, a.SALEABLE_AREA, e.NAMA_KLASIFIKASI,
   d.SKHAK, d.TANGGAL_AKHIR, CASE e.NAMA_KLASIFIKASI
@@ -28,7 +29,14 @@ async function getAll(req)
       WHEN 'TERSIER' then 'Q3'
       WHEN 'RESIDU' then 'Q4'
       ELSE null
-  END AS NAMA_KLASIFIKASI_ALIAS, f.NAMA as STATUS_KEP, f.DESKRIPSI, a.PATH_LAHAN_IMAGE,
+  END AS NAMA_KLASIFIKASI_ALIAS, 
+  CASE 
+  WHEN d.SKHAK = 'HGB' AND d.TANGGAL_AKHIR > TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD') then 'Hak Guna Bangunan'
+  WHEN d.SKHAK = 'HP' AND d.TANGGAL_AKHIR > TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD') then 'Hak Pakai'
+  WHEN d.SKHAK = 'HM' AND d.TANGGAL_AKHIR > TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD') then 'Hak Milik'
+  WHEN d.TANGGAL_AKHIR < TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD') then 'HGB Jatuh Tempo'
+  ELSE null
+END AS STATUS_KEP, f.DESKRIPSI, a.PATH_LAHAN_IMAGE,
   CASE WHEN d.SKHAK  IS NULL THEN 'Tidak Bersertifikat'
   ELSE 'Bersertifikat' END as STATUS_HGB,
   ROW_NUMBER() OVER (ORDER BY a.IDAREAL) RN
@@ -45,9 +53,16 @@ async function getAll(req)
   return transformedListLahan;
 }
 
+function getJatuhTempo() {
+    const date = new Date();
+    date.setFullYear(date.getFullYear() + 1)
+    return date.toISOString().split('T')[0];
+}
+
 async function getAllPagination(req)
 {
     const res ={}
+    const tahunJatuhTempo= getJatuhTempo()
     const params = req.query
     let per_page=10;
     let page=1;
@@ -67,7 +82,14 @@ async function getAllPagination(req)
         WHEN 'TERSIER' then 'Q3'
         WHEN 'RESIDU' then 'Q4'
         ELSE null
-    END AS NAMA_KLASIFIKASI_ALIAS, f.NAMA as STATUS_KEP, f.DESKRIPSI, a.PATH_LAHAN_IMAGE,
+    END AS NAMA_KLASIFIKASI_ALIAS,
+    CASE 
+        WHEN d.SKHAK = 'HGB' AND d.TANGGAL_AKHIR > TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD') then 'Hak Guna Bangunan'
+        WHEN d.SKHAK = 'HP' AND d.TANGGAL_AKHIR > TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD') then 'Hak Pakai'
+        WHEN d.SKHAK = 'HM' AND d.TANGGAL_AKHIR > TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD') then 'Hak Milik'
+        WHEN d.TANGGAL_AKHIR < TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD') then 'HGB Jatuh Tempo'
+        ELSE null
+    END AS STATUS_KEP, f.DESKRIPSI, a.PATH_LAHAN_IMAGE,
     CASE WHEN d.SKHAK  IS NULL THEN 'Tidak Bersertifikat'
     ELSE 'Bersertifikat' END as STATUS_HGB,
     ROW_NUMBER() OVER (ORDER BY a.IDAREAL) RN
@@ -107,6 +129,8 @@ async function getAllPagination(req)
 
 async function nearMe(params)
 {
+
+    const tahunJatuhTempo= getJatuhTempo()
     const lat =  (params.lat && params.lat.length>0) ? params.lat : -6.230361;
     const long = (params.long && params.long.length>0) ? params.long : 106.816673;
     const distance = (params.distance && params.distance>0)?params.distance:5;
@@ -118,7 +142,14 @@ async function nearMe(params)
         WHEN 'TERSIER' then 'Q3'
         WHEN 'RESIDU' then 'Q4'
         ELSE null
-    END AS NAMA_KLASIFIKASI_ALIAS, f.NAMA as STATUS_KEP, f.DESKRIPSI, a.PATH_LAHAN_IMAGE, 
+    END AS NAMA_KLASIFIKASI_ALIAS, 
+    CASE 
+    WHEN d.SKHAK = 'HGB' AND d.TANGGAL_AKHIR > TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD') then 'Hak Guna Bangunan'
+    WHEN d.SKHAK = 'HP' AND d.TANGGAL_AKHIR > TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD') then 'Hak Pakai'
+    WHEN d.SKHAK = 'HM' AND d.TANGGAL_AKHIR > TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD') then 'Hak Milik'
+    WHEN d.TANGGAL_AKHIR < TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD') then 'HGB Jatuh Tempo'
+    ELSE null
+    END AS STATUS_KEP, f.DESKRIPSI, a.PATH_LAHAN_IMAGE, 
         CASE WHEN d.SKHAK  IS NULL THEN 'Tidak Bersertifikat'
         ELSE 'Bersertifikat' END as STATUS_HGB,
         ROUND(
