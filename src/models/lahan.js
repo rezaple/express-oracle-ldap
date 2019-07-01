@@ -119,8 +119,8 @@ async function nearMe(params)
         WHEN 'RESIDU' then 'Q4'
         ELSE null
     END AS NAMA_KLASIFIKASI_ALIAS, f.NAMA as STATUS_KEP, f.DESKRIPSI, a.PATH_LAHAN_IMAGE, 
-        CASE WHEN d.SKHAK  IS NULL THEN 'Tidak Ada'
-        ELSE 'Ada' END as STATUS_HGB,
+        CASE WHEN d.SKHAK  IS NULL THEN 'Tidak Bersertifikat'
+        ELSE 'Bersertifikat' END as STATUS_HGB,
         ROUND(
         (6371* ACOS(
             COS(RADIANS(a.COOR_Y))
@@ -197,6 +197,10 @@ async function getDetail(idAreal)
     result.list_gedung = resGedung.rows.length > 0 ? resGedung.rows.map(gedung=>transform.transformListGedung(gedung)) : [];
 
     return result;
+}
+
+async function detailAsetLahan(){
+
 }
 
 function current_url(req){
