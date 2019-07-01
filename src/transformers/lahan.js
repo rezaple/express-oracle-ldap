@@ -14,7 +14,7 @@ function transformList(lahan){
         STATUS_SERTIFIKAT: lahan.STATUS_KEP?lahan.STATUS_KEP:"",
         //DESKRIPSI: lahan.DESKRIPSI?lahan.DESKRIPSI:"",
         PATH_LAHAN_IMAGE: lahan.PATH_LAHAN_IMAGE? 'http://mrra.telkom.co.id/gis/assets'+lahan.PATH_LAHAN_IMAGE:"",
-        STATUS_TAHAN: lahan.STATUS_HGB?lahan.STATUS_HGB:"",
+        STATUS_TANAH: lahan.STATUS_HGB?lahan.STATUS_HGB:"",
         STATUS_LAHAN: lahan.SALEABLE_AREA===0?'Lahan Terisi':'Lahan Kosong',
         RN: lahan.RN,
         DISTANCE: lahan.DISTANCE
