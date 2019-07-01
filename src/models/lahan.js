@@ -249,7 +249,7 @@ function setFilter(sql, params)
         if(tanahKosong===1)
             sql += ` AND a.SALEABLE_AREA > 0`;
         else
-            sql += ` AND (a.SALEABLE_AREA = 0 || a.SALEABLE_AREA IS NULL)`; 
+            sql += ` AND (a.SALEABLE_AREA = 0 OR a.SALEABLE_AREA IS NULL)`; 
     }
 
     if(params.status_sertifikat!== undefined && params.status_sertifikat.length > 0){
@@ -294,7 +294,7 @@ function setFilterNearMe(sql, params)
         if(tanahKosong===1)
             sql += ` AND SALEABLE_AREA > 0`;
         else
-            sql += ` AND (SALEABLE_AREA = 0 || SALEABLE_AREA IS NULL)`; 
+            sql += ` AND (SALEABLE_AREA = 0 OR SALEABLE_AREA IS NULL)`; 
     }
 
     if(params.status_sertifikat!== undefined && params.status_sertifikat.length > 0){
