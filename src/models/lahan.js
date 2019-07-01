@@ -153,7 +153,7 @@ async function getDetail(idAreal)
     left join LA_REF_ANALISIS_SCORE_KLAS c on TO_NUMBER(b.\"KLASIFIKASI\") = c.\"ID\" 
     left join LA_REF_STATUS_KEPEMILIKAN h on a.STATUS_KEPEMILIKAN = h.ID
     WHERE TO_CHAR(a.\"IDAREAL\") = '${idAreal}' AND ROWNUM <= 1`, {});
-    result.lahan_master =  res.rows.length > 0 ? res.rows.reduce((acc, lahan)=>transform.transformLahanMaster(lahan),0) : "";
+    res.rows.length > 0 ? result.lahan_master =res.rows.reduce((acc, lahan)=>transform.transformLahanMaster(lahan),0):"";
 
     const resImgLahan = await database.simpleExecute(`SELECT a.*,b.* FROM LA_ATTACHMENT_lahan a INNER JOIN LA_ATTACHMENT b on TO_NUMBER(a.ID_ATTACHMENT) = b.ID WHERE (TO_CHAR(a.IDAREAL)) = ${idAreal} AND TO_CHAR(a.ID_ATTACHMENT_GROUP) = 1 AND ROWNUM <= 3`,{});
     result.img_lahan =  resImgLahan.rows.length > 0 ? resImgLahan.rows.map(img=>transform.transformImageLahan(img)) : [];
@@ -162,27 +162,31 @@ async function getDetail(idAreal)
 
     const sertiPromises = resSertifikat.rows.map(async sertifikat=>{
         const resAttachment = await database.simpleExecute(`SELECT * FROM LA_ATT_SERTIPIKAT_LAHAN WHERE ID_SERTIPIKAT = :ID_SERTIPIKAT AND ROWNUM <= 1`, {ID_SERTIPIKAT:sertifikat.ID});
-        sertifikat.attachment = resAttachment.rows.length > 0 ? transform.transformAttSertifikatLahan(resAttachment.rows[0]):"";
+        resAttachment.rows.length > 0 ? sertifikat.attachment =  transform.transformAttSertifikatLahan(resAttachment.rows[0]):"";
         return await transform.transformSertifikatLahan(sertifikat)
     }) ;
-    result.kepemilikan = await Promise.all(sertiPromises)
+    const kepemilikan = await Promise.all(sertiPromises)
+    result.kepemilikan= kepemilikan.length > 0?kepemilikan:[];
 
     const resPBB = await database.simpleExecute(`SELECT * FROM LA_PBB_LAHAN WHERE IDAREAL = :ID_AREAL ORDER BY NVL(TAHUN, -1) DESC`,{ID_AREAL: idAreal});
     result.pbb = resPBB.rows.length > 0 ? resPBB.rows.map(pbb=>transform.transformPBBLahan(pbb)) : [];
 
     const resKJPP = await database.simpleExecute(`SELECT a.ID, a.LUAS, a.HARGA, a.TANGGAL, a.NAMA FROM LA_KJPP_LAHAN a JOIN GIS_LAHAN_MASTER b on TO_CHAR(a.IDAREAL) = TO_CHAR(b.IDAREAL) WHERE b.IDAREAL = :ID_AREAL AND ROWNUM <= 1`,{ID_AREAL: idAreal});
-    result.nilai_aset = resKJPP.rows.length > 0 ? resKJPP.rows.reduce((acc, kjpp)=>transform.transformKJPPLahan(kjpp),0) : "";
+     resKJPP.rows.length > 0 ? result.nilai_aset = resKJPP.rows.reduce((acc, kjpp)=>transform.transformKJPPLahan(kjpp),0) : "";
 
     const resNKA = await database.simpleExecute(`SELECT * FROM LA_NKA_LAHAN WHERE IDAREAL = :ID_AREAL`,{ID_AREAL: idAreal});
     result.nka = resNKA.rows.length > 0 ? resNKA.rows.map(nka=>transform.transformNKALahan(nka)) : [];
  
     const resSengketaAset = await database.simpleExecute(`SELECT * FROM LA_POTENSI_SENGKETA_LAHAN  WHERE IDAREAL= :ID_AREAL AND ROWNUM <= 1`,{ID_AREAL: idAreal});
-    const sengketaPromises= resSengketaAset.rows.length > 0 ? resSengketaAset.rows.reduce(async (acc, aset)=>{
-        const resAttachment = await database.simpleExecute(`SELECT NAMA_DOKUMEN, DESKRIPSI, FILE_PATH FROM LA_ATT_SENGKETA_LAHAN  WHERE IDAREAL = :ID_AREAL AND ROWNUM <= 1`, {ID_AREAL:idAreal});
-        aset.attachment = resAttachment.rows.length > 0 ? transform.transformAttSengketaLahan(resAttachment.rows[0]):"";
-        return transform.transformSengketaAset(aset)
-    },0) : "";
-    result.potensi_sengketa_lahan = await sengketaPromises
+    if(resSengketaAset.rows.length > 0){ 
+         const sengketaPromises = resSengketaAset.rows.reduce(async (acc, aset)=>{
+            const resAttachment = await database.simpleExecute(`SELECT NAMA_DOKUMEN, DESKRIPSI, FILE_PATH FROM LA_ATT_SENGKETA_LAHAN  WHERE IDAREAL = :ID_AREAL AND ROWNUM <= 1`, {ID_AREAL:idAreal});
+            resAttachment.rows.length > 0 ? aset.attachment = transform.transformAttSengketaLahan(resAttachment.rows[0]):"";
+            return transform.transformSengketaAset(aset)
+        },0) 
+        result.potensi_sengketa_lahan = await sengketaPromises
+    }
+    
 
     const resGedung = await database.simpleExecute(`SELECT DISTINCT(a.IDGEDUNG),a.IDAREAL, a.COOR_X, a.COOR_Y, a.NAMA_GEDUNG, a.ALAMAT, a.LUAS_BANGUNAN, a.JUMLAH_LANTAI, a.SALEABLE_AREA, b.NAMA_KEGIATAN, a.PATH_GEDUNG_IMAGE,
          ROW_NUMBER() OVER (ORDER BY a.IDGEDUNG) RN
