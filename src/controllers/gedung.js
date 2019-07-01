@@ -30,10 +30,18 @@ async function getDetail(req, res, next) {
   try {
     const id = parseInt(req.params.id, 10);
     const rows = await gedung.getDetail(id);
-    res.status(200).json({
-      status:200,
-			data:rows,
-    });
+
+    if(rows.gedung_master===undefined || rows.gedung_master ===""){
+      res.status(404).json({
+        status:404,
+        data:"Not Found",
+      });
+    }else{
+      res.status(200).json({
+        status:200,
+        data:rows,
+      });
+    }
   } catch (err) {
     res.status(500).json({
       status:500,
