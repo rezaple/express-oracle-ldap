@@ -156,7 +156,7 @@ async function getDetail(idAreal)
     result.lahan_master =  res.rows.length > 0 ? res.rows.reduce((acc, lahan)=>transform.transformLahanMaster(lahan),0) : "";
 
     const resImgLahan = await database.simpleExecute(`SELECT a.*,b.* FROM LA_ATTACHMENT_lahan a INNER JOIN LA_ATTACHMENT b on TO_NUMBER(a.ID_ATTACHMENT) = b.ID WHERE (TO_CHAR(a.IDAREAL)) = ${idAreal} AND TO_CHAR(a.ID_ATTACHMENT_GROUP) = 1 AND ROWNUM <= 3`,{});
-    result.img_lahan =  resImgLahan.rows.length > 0 ? resImgLahan.rows.map(img=>transform.transformImageLahan(img)) : "";
+    result.img_lahan =  resImgLahan.rows.length > 0 ? resImgLahan.rows.map(img=>transform.transformImageLahan(img)) : [];
 
     const resSertifikat = await database.simpleExecute(`SELECT * FROM LA_SERTIPIKAT_BARU WHERE IDAREAL= :ID_AREAL`,{ID_AREAL: idAreal});
 
@@ -168,13 +168,13 @@ async function getDetail(idAreal)
     result.kepemilikan = await Promise.all(sertiPromises)
 
     const resPBB = await database.simpleExecute(`SELECT * FROM LA_PBB_LAHAN WHERE IDAREAL = :ID_AREAL ORDER BY NVL(TAHUN, -1) DESC`,{ID_AREAL: idAreal});
-    result.pbb = resPBB.rows.length > 0 ? resPBB.rows.map(pbb=>transform.transformPBBLahan(pbb)) : "";
+    result.pbb = resPBB.rows.length > 0 ? resPBB.rows.map(pbb=>transform.transformPBBLahan(pbb)) : [];
 
     const resKJPP = await database.simpleExecute(`SELECT a.ID, a.LUAS, a.HARGA, a.TANGGAL, a.NAMA FROM LA_KJPP_LAHAN a JOIN GIS_LAHAN_MASTER b on TO_CHAR(a.IDAREAL) = TO_CHAR(b.IDAREAL) WHERE b.IDAREAL = :ID_AREAL AND ROWNUM <= 1`,{ID_AREAL: idAreal});
     result.nilai_aset = resKJPP.rows.length > 0 ? resKJPP.rows.reduce((acc, kjpp)=>transform.transformKJPPLahan(kjpp),0) : "";
 
     const resNKA = await database.simpleExecute(`SELECT * FROM LA_NKA_LAHAN WHERE IDAREAL = :ID_AREAL`,{ID_AREAL: idAreal});
-    result.nka = resNKA.rows.length > 0 ? resNKA.rows.map(nka=>transform.transformNKALahan(nka)) : "";
+    result.nka = resNKA.rows.length > 0 ? resNKA.rows.map(nka=>transform.transformNKALahan(nka)) : [];
  
     const resSengketaAset = await database.simpleExecute(`SELECT * FROM LA_POTENSI_SENGKETA_LAHAN  WHERE IDAREAL= :ID_AREAL AND ROWNUM <= 1`,{ID_AREAL: idAreal});
     const sengketaPromises= resSengketaAset.rows.length > 0 ? resSengketaAset.rows.reduce(async (acc, aset)=>{
@@ -190,7 +190,7 @@ async function getDetail(idAreal)
              left join LA_PENGGUNAAN_BANGUNAN b on b.IDGEDUNG = a.IDGEDUNG
              left join LA_LAHAN f on TO_CHAR(f.IDAREAL) = TO_CHAR(a.IDAREAL) 
              WHERE a.IDAREAL = :ID_AREAL`,{ID_AREAL: idAreal});
-    result.list_gedung = resGedung.rows.length > 0 ? resGedung.rows.map(gedung=>transform.transformListGedung(gedung)) : "";
+    result.list_gedung = resGedung.rows.length > 0 ? resGedung.rows.map(gedung=>transform.transformListGedung(gedung)) : [];
 
     return result;
 }

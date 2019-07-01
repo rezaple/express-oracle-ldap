@@ -133,20 +133,20 @@ async function getDetail(idGedung)
     result.lahan =  transform.transformLahan(resLahan.rows[0]);
 
     const resImgGedung = await database.simpleExecute(`SELECT a.*,b.* FROM LA_ATTACHMENT_GEDUNG a INNER JOIN LA_ATTACHMENT b on TO_NUMBER(a.ID_ATTACHMENT) = b.ID WHERE (TO_CHAR(a.IDGEDUNG)) = ${idGedung} AND TO_CHAR(a.ID_ATTACHMENT_GROUP) = 1 AND ROWNUM <= 3`,{});
-    result.img_gedung =  resImgGedung.rows.length > 0 ? resImgGedung.rows.map(img=>transform.transformImageGedung(img)) : "";
+    result.img_gedung =  resImgGedung.rows.length > 0 ? resImgGedung.rows.map(img=>transform.transformImageGedung(img)) : [];
 
     let resPBB = await database.simpleExecute(`SELECT * FROM LA_PBB_GEDUNG WHERE IDGEDUNG = :ID_GEDUNG`, {ID_GEDUNG: idGedung});
-    result.pbb =  resPBB.rows.length > 0 ? resPBB.rows.map(pbb=>transform.transformPBBGedung(pbb)) : "";
+    result.pbb =  resPBB.rows.length > 0 ? resPBB.rows.map(pbb=>transform.transformPBBGedung(pbb)) : [];
 
     let resNKA = await database.simpleExecute(`SELECT * FROM LA_NKA_GEDUNG WHERE IDGEDUNG = :ID_GEDUNG`, {ID_GEDUNG: idGedung});
-    result.nka =  resNKA.rows.length > 0 ? resNKA.rows.map(nka=>transform.transformNKAGedung(nka)) : "";
+    result.nka =  resNKA.rows.length > 0 ? resNKA.rows.map(nka=>transform.transformNKAGedung(nka)) : [];
 
     let resTagihanListrik = await database.simpleExecute(`SELECT t.* FROM LA_LISTRIK_GEDUNG t JOIN ( SELECT IDGEDUNG, MAX(TANGGAL) AS TANGGAL FROM LA_LISTRIK_GEDUNG WHERE IDGEDUNG= :ID_GEDUNG GROUP BY IDGEDUNG ) m
     ON  m.IDGEDUNG = t.IDGEDUNG AND m.TANGGAL = t.TANGGAL WHERE ROWNUM=1`, {ID_GEDUNG: idGedung});
-    result.listrik =  resTagihanListrik.rows.length > 0 ? resTagihanListrik.rows.map(listrik=>transform.transformTagihanListrik(listrik)) : "";
+    result.listrik =  resTagihanListrik.rows.length > 0 ? resTagihanListrik.rows.map(listrik=>transform.transformTagihanListrik(listrik)) : [];
 
     let resTagihanAir = await database.simpleExecute(`SELECT t.* FROM LA_AIR t JOIN (SELECT IDGEDUNG, MAX(TANGGAL) AS TANGGAL FROM LA_AIR WHERE IDGEDUNG= :ID_GEDUNG GROUP BY IDGEDUNG ) m ON  m.IDGEDUNG = t.IDGEDUNG AND m.TANGGAL = t.TANGGAL WHERE ROWNUM=1`, {ID_GEDUNG: idGedung});
-    result.air =  resTagihanAir.rows.length > 0 ? resTagihanAir.rows.map(air=>transform.transformTagihanAir(air) ): "";
+    result.air =  resTagihanAir.rows.length > 0 ? resTagihanAir.rows.map(air=>transform.transformTagihanAir(air) ): [];
 
     return result;
 }
@@ -154,14 +154,14 @@ async function getDetail(idGedung)
 async function getListrik(id)
 {
     const resTagihanListrik = await database.simpleExecute(`SELECT * FROM LA_LISTRIK_GEDUNG WHERE IDGEDUNG= :ID_GEDUNG ORDER BY TANGGAL DESC`, {ID_GEDUNG: id});
-    const result =  resTagihanListrik.rows.length > 0 ? resTagihanListrik.rows.map(listrik=>transform.transformTagihanListrik(listrik)) : "";
+    const result =  resTagihanListrik.rows.length > 0 ? resTagihanListrik.rows.map(listrik=>transform.transformTagihanListrik(listrik)) : [];
     return result
 }
 
 async function getAir(id)
 {
     const resTagihanAir = await database.simpleExecute(`SELECT * FROM LA_AIR WHERE IDGEDUNG=:ID_GEDUNG ORDER BY TANGGAL DESC`, {ID_GEDUNG: id});
-    const result =  resTagihanAir.rows.length > 0 ? resTagihanAir.rows.map(air=>transform.transformTagihanAir(air) ): "";
+    const result =  resTagihanAir.rows.length > 0 ? resTagihanAir.rows.map(air=>transform.transformTagihanAir(air) ): [];
 
     return result;
 }
