@@ -202,8 +202,7 @@ function setFilter(sql, params)
 
     if(params.nama!== undefined && params.nama.length > 0){
         const nama=params.nama;
-        const namaCapital= nama.toUpperCase();
-        sql += ` AND (a.NAMA_GEDUNG like '%${nama}%' OR a.NAMA_GEDUNG like '%${namaCapital}%')`;
+        sql += ` AND regexp_like(a.NAMA_GEDUNG, '${nama}', 'i')`;
     }
 
     if(params.luas!== undefined && params.luas.length > 0){
@@ -225,8 +224,7 @@ function setFilterNearMe(sql, params)
 
     if(params.nama !== undefined && params.nama.length > 0){
         const nama=params['nama'];
-        const namaCapital= nama.toUpperCase();
-        sql += ` AND (NAMA_GEDUNG like '%${nama}%' OR NAMA_GEDUNG like '%${namaCapital}%')`;
+        sql += ` AND regexp_like(NAMA_GEDUNG, '${nama}', 'i')`;
     }
     
     return sql;
