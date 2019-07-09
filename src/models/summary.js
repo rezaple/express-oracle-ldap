@@ -52,20 +52,66 @@ async function getSummaryKlasifikasiAset(type='PRIMER')
 async function getSengketaAset()
 {
     const binds = {};
-    let query =`SELECT count(case when STATUS = 'LITIGASI' then 1 end) LITIGASI,
-    count(case when STATUS = 'NON LITIGASI' then 1 end) NON_LITIGASI,
-    count(case when STATUS = 'TIDAK ADA MASALAH' then 1 end) TIDAK_ADA_MASALAH,
-    count(case when STATUS IS NULL then 1 end) TIDAK_ADA_STATUS FROM LA_POTENSI_SENGKETA_LAHAN`;
+    let query =`SELECT count(case when a.STATUS = 'LITIGASI' then 1 end) LITIGASI,
+    count(case when a.STATUS = 'NON LITIGASI' then 1 end) NON_LITIGASI,
+    count(case when a.STATUS = 'TIDAK ADA MASALAH' then 1 end) TIDAK_ADA_MASALAH,
+    count(case when a.STATUS IS NULL then 1 end) TIDAK_ADA_STATUS FROM 
+    LA_POTENSI_SENGKETA_LAHAN a JOIN LA_LAHAN b ON TO_CHAR(a.IDAREAL) = TO_CHAR(b.IDAREAL)`;
 
     const result = await database.simpleExecute(query, binds);
 
     return result.rows[0];
 }
 
-//logika ge jatuh tempo
-//yang tanggal akihirnya setahun lagi akan habis atau yang udah expired
-//jadi tgl sekarang + 1 tahun
-//tg_lakhir_database < tgl_tahun_depan 
+async function detailSengketaAset(){
+  const resultAsets = await database.simpleExecute(`SELECT b.ID, b.TREG_ID, b.NAMA, 
+  count(case when STATUS = 'LITIGASI' then 1 end) as LITIGASI, 
+  count(case when STATUS = 'NON LITIGASI' then 1 end) as NON_LITIGASI 
+  FROM LA_REF_WILAYAH_TELKOM b 
+  LEFT JOIN LA_LAHAN a ON TO_CHAR(b.ID) = TO_CHAR(a.WILAYAH_TELKOM) 
+  LEFT JOIN LA_POTENSI_SENGKETA_LAHAN c ON TO_CHAR(c.IDAREAL) = TO_CHAR(a.IDAREAL) 
+  GROUP BY b.ID, b.TREG_ID, b.NAMA 
+  ORDER BY b.TREG_ID ASC`,{});
+  const result=[];
+
+  resultAsets.rows.map(aset => {
+      if(result[aset.TREG_ID]===undefined){
+          result[aset.TREG_ID]={
+              id:aset.TREG_ID,
+              nama:`Regional ${aset.TREG_ID}`,
+              sengketa:{
+                  litigasi:aset.LITIGASI,
+                  non_litigasi:aset.NON_LITIGASI,
+              },
+              witels:[{
+                  id:aset.ID,
+                  nama:`${aset.NAMA}`,
+                  sengketa:{
+                      litigasi: aset.LITIGASI,
+                      non_litigasi: aset.NON_LITIGASI
+                  },
+              }]
+          }
+      }else{
+          result[aset.TREG_ID].sengketa.litigasi += aset.LITIGASI
+          result[aset.TREG_ID].sengketa.non_litigasi += aset.NON_LITIGASI
+
+          result[aset.TREG_ID].witels.push({
+              id:aset.ID,
+              nama:`${aset.NAMA}`,
+              sengketa:{
+                litigasi: aset.LITIGASI,
+                non_litigasi: aset.NON_LITIGASI
+            },
+          })
+      }
+      
+  })
+
+  return result.filter(function() { return true; });
+}
+
+
 async function getStatusTanah()
 {
     const date = new Date();
@@ -85,4 +131,5 @@ async function getStatusTanah()
 
 module.exports={
   getSummary,
+  detailSengketaAset
 };

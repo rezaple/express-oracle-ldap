@@ -69,6 +69,8 @@ router.route('/gedung/:id/air')
       .get(gedung.getTagihanAir);
 router.route('/summary')
       .get(summary.getSummary);
+router.route('/sengketa/aset')
+      .get(summary.getDetailSengketaAset);
 
 
 module.exports = router;

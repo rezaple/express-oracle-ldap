@@ -267,8 +267,6 @@ async function getAsetLahan(condition){
     const result = await database.simpleExecute(query, {});
 
     return result.rows;
-
-    
 }
 
 async function detailAsetLahan(){
@@ -293,7 +291,7 @@ async function detailAsetLahan(){
                 },
                 witels:[{
                     id:aset.ID,
-                    nama:`Witel ${aset.ID}`,
+                    nama:`${aset.NAMA}`,
                     aset:{
                         total: aset.TOTAL_LAHAN,
                         luas: aset.LUAS
@@ -313,7 +311,7 @@ async function detailAsetLahan(){
 
             result[aset.TREG_ID].witels.push({
                 id:aset.ID,
-                nama:`Witel ${aset.ID}`,
+                nama:`${aset.NAMA}`,
                 aset:{
                     total: aset.TOTAL_LAHAN,
                     luas: aset.LUAS

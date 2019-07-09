@@ -187,7 +187,7 @@ async function detailAsetGedung(){
                 },
                 witels:[{
                     id:aset.ID,
-                    nama:`Witel ${aset.ID}`,
+                    nama:`${aset.NAMA}`,
                     aset:{
                         total: aset.TOTAL_GEDUNG,
                         luas: aset.LUAS
@@ -200,7 +200,7 @@ async function detailAsetGedung(){
 
             result[aset.TREG_ID].witels.push({
                 id:aset.ID,
-                nama:`Witel ${aset.ID}`,
+                nama:`${aset.NAMA}`,
                 aset:{
                     total: aset.TOTAL_GEDUNG,
                     luas: aset.LUAS
