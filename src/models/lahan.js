@@ -20,31 +20,43 @@ const url = require('url');
 //f.NAMA as STATUS_KEP
 async function getAll(req)
 {
-  const tahunJatuhTempo= getJatuhTempo()
-  const params = req.query
-  let sql =`SELECT DISTINCT(a.IDAREAL), a.COOR_X, a.COOR_Y, a.NAMA_LAHAN, a.ALAMAT,a.LUAS_LAHAN, a.JUMLAH_BANGUNAN, a.GUNA_LAHAN, a.SALEABLE_AREA, e.NAMA_KLASIFIKASI,
-  d.SKHAK, d.TANGGAL_AKHIR, CASE e.NAMA_KLASIFIKASI
+    const tahunJatuhTempo= getJatuhTempo()
+    const params = req.query
+    const lat =  (params.lat && params.lat.length>0) ? params.lat : -6.230361;
+    const long = (params.long && params.long.length>0) ? params.long : 106.816673;
+    let sql =`SELECT DISTINCT(a.IDAREAL), a.COOR_X, a.COOR_Y, a.NAMA_LAHAN, a.ALAMAT,a.LUAS_LAHAN, a.JUMLAH_BANGUNAN, a.GUNA_LAHAN, a.SALEABLE_AREA, e.NAMA_KLASIFIKASI,
+    d.SKHAK, d.TANGGAL_AKHIR, CASE e.NAMA_KLASIFIKASI
       WHEN 'PRIMER' then 'Q1'
       WHEN 'SEKUNDER' then 'Q2'
       WHEN 'TERSIER' then 'Q3'
       WHEN 'RESIDU' then 'Q4'
       ELSE null
-  END AS NAMA_KLASIFIKASI_ALIAS, 
-  CASE 
-  WHEN d.SKHAK = 'HGB' AND d.TANGGAL_AKHIR > TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD') then 'Hak Guna Bangunan'
-  WHEN d.SKHAK = 'HP' AND d.TANGGAL_AKHIR > TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD') then 'Hak Pakai'
-  WHEN d.SKHAK = 'HM' AND d.TANGGAL_AKHIR > TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD') then 'Hak Milik'
-  WHEN d.TANGGAL_AKHIR < TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD') then 'HGB Jatuh Tempo'
-  ELSE null
-END AS STATUS_KEP, f.DESKRIPSI, a.PATH_LAHAN_IMAGE,
-  CASE WHEN d.SKHAK  IS NULL THEN 'Tidak Bersertifikat'
-  ELSE 'Bersertifikat' END as STATUS_HGB,
-  ROW_NUMBER() OVER (ORDER BY a.IDAREAL) RN
-  FROM GIS_LAHAN_MASTER a 
-  left join LA_ANALISIS_SCORE b on TO_CHAR(a.IDAREAL) = TO_CHAR(b.IDAREAL)
-      left join LA_REF_ANALISIS_SCORE_KLAS e on TO_NUMBER(b.KLASIFIKASI) = e.ID
-      left join LA_REF_STATUS_KEPEMILIKAN f on TO_CHAR(f.ID) = TO_CHAR(a.STATUS_KEPEMILIKAN)
-      left join LA_SERTIPIKAT_BARU d on TO_CHAR(d.IDAREAL) = TO_CHAR(a.IDAREAL)`;
+    END AS NAMA_KLASIFIKASI_ALIAS, 
+    CASE 
+    WHEN d.SKHAK = 'HGB' AND d.TANGGAL_AKHIR > TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD') then 'Hak Guna Bangunan'
+    WHEN d.SKHAK = 'HP' AND d.TANGGAL_AKHIR > TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD') then 'Hak Pakai'
+    WHEN d.SKHAK = 'HM' AND d.TANGGAL_AKHIR > TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD') then 'Hak Milik'
+    WHEN d.TANGGAL_AKHIR < TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD') then 'HGB Jatuh Tempo'
+    ELSE null
+    END AS STATUS_KEP, f.DESKRIPSI, a.PATH_LAHAN_IMAGE,
+    CASE WHEN d.SKHAK  IS NULL THEN 'Tidak Bersertifikat'
+    ELSE 'Bersertifikat' END as STATUS_HGB,
+    ROUND(
+    (6371* ACOS(
+        COS(RADIANS(a.COOR_Y))
+        * COS(RADIANS(${lat}))
+        * COS(RADIANS(${long}) - RADIANS(a.COOR_X))
+        + SIN(RADIANS(a.COOR_Y))
+        * SIN(RADIANS(${lat}))
+        )
+    ), 1
+    ) AS DISTANCE,
+    ROW_NUMBER() OVER (ORDER BY a.IDAREAL) RN
+    FROM GIS_LAHAN_MASTER a 
+    left join LA_ANALISIS_SCORE b on TO_CHAR(a.IDAREAL) = TO_CHAR(b.IDAREAL)
+    left join LA_REF_ANALISIS_SCORE_KLAS e on TO_NUMBER(b.KLASIFIKASI) = e.ID
+    left join LA_REF_STATUS_KEPEMILIKAN f on TO_CHAR(f.ID) = TO_CHAR(a.STATUS_KEPEMILIKAN)
+    left join LA_SERTIPIKAT_BARU d on TO_CHAR(d.IDAREAL) = TO_CHAR(a.IDAREAL)`;
 
   const query = setFilter(sql, params);
   const result = await database.simpleExecute(query, {});
@@ -64,6 +76,8 @@ async function getAllPagination(req)
     const res ={}
     const tahunJatuhTempo= getJatuhTempo()
     const params = req.query
+    const lat =  (params.lat && params.lat.length>0) ? params.lat : -6.230361;
+    const long = (params.long && params.long.length>0) ? params.long : 106.816673;
     let per_page=10;
     let page=1;
     if(params.per_page !== undefined){
@@ -92,6 +106,16 @@ async function getAllPagination(req)
     END AS STATUS_KEP, f.DESKRIPSI, a.PATH_LAHAN_IMAGE,
     CASE WHEN d.SKHAK  IS NULL THEN 'Tidak Bersertifikat'
     ELSE 'Bersertifikat' END as STATUS_HGB,
+    ROUND(
+    (6371* ACOS(
+        COS(RADIANS(a.COOR_Y))
+        * COS(RADIANS(${lat}))
+        * COS(RADIANS(${long}) - RADIANS(a.COOR_X))
+        + SIN(RADIANS(a.COOR_Y))
+        * SIN(RADIANS(${lat}))
+        )
+    ), 1
+    ) AS DISTANCE,
     ROW_NUMBER() OVER (ORDER BY a.IDAREAL) RN
     FROM GIS_LAHAN_MASTER a 
     left join LA_ANALISIS_SCORE b on TO_CHAR(a.IDAREAL) = TO_CHAR(b.IDAREAL)
@@ -129,7 +153,6 @@ async function getAllPagination(req)
 
 async function nearMe(params)
 {
-
     const tahunJatuhTempo= getJatuhTempo()
     const lat =  (params.lat && params.lat.length>0) ? params.lat : -6.230361;
     const long = (params.long && params.long.length>0) ? params.long : 106.816673;
