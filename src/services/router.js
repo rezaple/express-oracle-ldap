@@ -71,6 +71,8 @@ router.route('/summary')
       .get(summary.getSummary);
 router.route('/sengketa/aset')
       .get(summary.getDetailSengketaAset);
+router.route('/klasifikasi/aset')
+      .get(summary.getDetailKlasifikasiAset);
 
 
 module.exports = router;

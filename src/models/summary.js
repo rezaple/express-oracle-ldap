@@ -49,6 +49,65 @@ async function getSummaryKlasifikasiAset(type='PRIMER')
     return result.rows[0];
 }
 
+async function detailKlasifikasiAset(){
+  const resultAsets = await database.simpleExecute(`SELECT b.ID, b.TREG_ID, b.NAMA, 
+  count(case when d.NAMA_KLASIFIKASI = 'PRIMER' then 1 end) as Q1, 
+  count(case when d.NAMA_KLASIFIKASI = 'SEKUNDER' then 1 end) as Q2, 
+  count(case when d.NAMA_KLASIFIKASI = 'TERSIER' then 1 end) as Q3, 
+  count(case when d.NAMA_KLASIFIKASI = 'RESIDU' then 1 end) as Q4 
+  FROM LA_REF_WILAYAH_TELKOM b 
+  LEFT JOIN LA_LAHAN a ON TO_CHAR(b.ID) = TO_CHAR(a.WILAYAH_TELKOM) 
+  LEFT JOIN LA_ANALISIS_SCORE c on TO_CHAR(a.IDAREAL) = TO_CHAR(c.IDAREAL)
+  LEFT JOIN LA_REF_ANALISIS_SCORE_KLAS d on TO_NUMBER(c.KLASIFIKASI) = d.ID
+  GROUP BY b.ID, b.TREG_ID, b.NAMA 
+  ORDER BY b.TREG_ID ASC`,{});
+  const result=[];
+
+  resultAsets.rows.map(aset => {
+      if(result[aset.TREG_ID]===undefined){
+          result[aset.TREG_ID]={
+              id:aset.TREG_ID,
+              nama:`Regional ${aset.TREG_ID}`,
+              klasifikasi:{
+                  q1:aset.Q1,
+                  q2:aset.Q2,
+                  q3:aset.Q3,
+                  q4:aset.Q4,
+              },
+              witels:[{
+                  id:aset.ID,
+                  nama:`${aset.NAMA}`,
+                  klasifikasi:{
+                    q1:aset.Q1,
+                    q2:aset.Q2,
+                    q3:aset.Q3,
+                    q4:aset.Q4,
+                  },
+              }]
+          }
+      }else{
+          result[aset.TREG_ID].klasifikasi.q1 += aset.Q1
+          result[aset.TREG_ID].klasifikasi.q2 += aset.Q2
+          result[aset.TREG_ID].klasifikasi.q3 += aset.Q3
+          result[aset.TREG_ID].klasifikasi.q4 += aset.Q4
+
+          result[aset.TREG_ID].witels.push({
+              id:aset.ID,
+              nama:`${aset.NAMA}`,
+              klasifikasi:{
+                q1:aset.Q1,
+                q2:aset.Q2,
+                q3:aset.Q3,
+                q4:aset.Q4,
+              },
+          })
+      }
+      
+  })
+
+  return result.filter(function() { return true; });
+}
+
 async function getSengketaAset()
 {
     const binds = {};
@@ -131,5 +190,6 @@ async function getStatusTanah()
 
 module.exports={
   getSummary,
-  detailSengketaAset
+  detailSengketaAset,
+  detailKlasifikasiAset
 };
