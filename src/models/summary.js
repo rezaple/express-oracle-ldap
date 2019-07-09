@@ -170,7 +170,6 @@ async function detailSengketaAset(){
   return result.filter(function() { return true; });
 }
 
-
 async function getStatusTanah()
 {
     const date = new Date();
@@ -188,8 +187,92 @@ async function getStatusTanah()
     ;
 }
 
+async function getSertifikatAsetLahan(){
+  const date = new Date();
+  date.setFullYear(date.getFullYear() + 1)
+  const tahunJatuhTempo = date.toISOString().split('T')[0];
+  const result = await database.simpleExecute(`SELECT b.ID, b.TREG_ID, b.NAMA, 
+  count(case when d.SKHAK IS NULL then 1 end) as TIDAK_BERSERTIFIKAT, 
+  count(case when d.SKHAK IS NOT NULL then 1 end) as BERSERTIFIKAT,
+  count(case when d.SKHAK = 'HGB' AND d.TANGGAL_AKHIR > TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD') then 1 end) HGB,
+  count(case when d.SKHAK = 'HP' AND d.TANGGAL_AKHIR > TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD')  then 1 end) HP,
+  count(case when d.SKHAK = 'HM' AND d.TANGGAL_AKHIR > TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD')  then 1 end) HM,
+  count(case when d.TANGGAL_AKHIR < TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD') then 1 end) JATUH_TEMPO 
+  FROM LA_REF_WILAYAH_TELKOM b 
+  LEFT JOIN LA_LAHAN a ON TO_CHAR(b.ID) = TO_CHAR(a.WILAYAH_TELKOM)
+  LEFT JOIN LA_SERTIPIKAT_BARU d on TO_CHAR(d.IDAREAL) = TO_CHAR(a.IDAREAL) 
+  GROUP BY b.ID, b.TREG_ID, b.NAMA 
+  ORDER BY b.TREG_ID ASC`,{})
+  return result.rows
+}
+
+async function detailStatusTanah(){
+  const resultSertifikat = await getSertifikatAsetLahan();
+  const result=[];
+
+  resultSertifikat.map(aset => {
+      if(result[aset.TREG_ID]===undefined){
+          result[aset.TREG_ID]={
+              id:aset.TREG_ID,
+              nama:`Regional ${aset.TREG_ID}`,
+              aset:{
+                  bersertifikat:aset.BERSERTIFIKAT,
+                  tidak_bersertifikat:aset.TIDAK_BERSERTIFIKAT,
+              },
+              sertifikat:{
+                  hgb:aset.HGB,
+                  hp:aset.HP,
+                  hm:aset.HM,
+                  jatuh_tempo:aset.JATUH_TEMPO
+              },
+              witels:[{
+                  id:aset.ID,
+                  nama:`${aset.NAMA}`,
+                  aset:{
+                    bersertifikat:aset.BERSERTIFIKAT,
+                    tidak_bersertifikat:aset.TIDAK_BERSERTIFIKAT,
+                  },
+                  sertifikat:{
+                      hgb:aset.HGB,
+                      hp:aset.HP,
+                      hm:aset.HM,
+                      jatuh_tempo:aset.JATUH_TEMPO
+                  },
+              }]
+          }
+      }else{
+          result[aset.TREG_ID].aset.bersertifikat += aset.BERSERTIFIKAT
+          result[aset.TREG_ID].aset.tidak_bersertifikat += aset.TIDAK_BERSERTIFIKAT
+
+          result[aset.TREG_ID].sertifikat.hgb +=aset.HGB,
+          result[aset.TREG_ID].sertifikat.hp += aset.HP,
+          result[aset.TREG_ID].sertifikat.hm +=aset.HM,
+          result[aset.TREG_ID].sertifikat.jatuh_tempo += aset.JATUH_TEMPO
+
+          result[aset.TREG_ID].witels.push({
+              id:aset.ID,
+              nama:`${aset.NAMA}`,
+              aset:{
+                bersertifikat:aset.BERSERTIFIKAT,
+                tidak_bersertifikat:aset.TIDAK_BERSERTIFIKAT,
+              },
+              sertifikat:{
+                  hgb:aset.HGB,
+                  hp:aset.HP,
+                  hm:aset.HM,
+                  jatuh_tempo:aset.JATUH_TEMPO
+              },
+          })
+      }
+      
+  })
+
+  return result.filter(function() { return true; });
+}
+
 module.exports={
   getSummary,
   detailSengketaAset,
-  detailKlasifikasiAset
+  detailKlasifikasiAset,
+  detailStatusTanah
 };

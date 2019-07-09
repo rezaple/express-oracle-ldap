@@ -73,6 +73,7 @@ router.route('/sengketa/aset')
       .get(summary.getDetailSengketaAset);
 router.route('/klasifikasi/aset')
       .get(summary.getDetailKlasifikasiAset);
-
+router.route('/status-tanah/aset')
+      .get(summary.getDetailStatusTanah);
 
 module.exports = router;
