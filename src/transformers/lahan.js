@@ -17,7 +17,7 @@ function transformList(lahan){
         STATUS_TANAH: lahan.STATUS_HGB?lahan.STATUS_HGB:"",
         STATUS_LAHAN: lahan.SALEABLE_AREA===0?'Lahan Terisi':'Lahan Kosong',
         RN: lahan.RN,
-        DISTANCE: lahan.DISTANCE?lahan.DISTANCE.toFixed(2):0
+        DISTANCE: lahan.DISTANCE?parseFloat(lahan.DISTANCE.toFixed(2)):0
     }
 }
 
