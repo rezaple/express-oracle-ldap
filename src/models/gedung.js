@@ -9,26 +9,37 @@ const url = require('url');
  */
 async function getAll(req)
 {
-  const params = req.query
-  let sql =`SELECT DISTINCT(a.IDGEDUNG),a.IDAREAL, a.COOR_X, a.COOR_Y, a.NAMA_GEDUNG, a.ALAMAT, a.LUAS_BANGUNAN, a.JUMLAH_LANTAI, a.SALEABLE_AREA, b.NAMA_KEGIATAN, a.PATH_GEDUNG_IMAGE,
-  ROW_NUMBER() OVER (ORDER BY a.IDGEDUNG) RN
-      FROM GIS_BANGUNAN_MASTER a 
-      left join LA_PENGGUNAAN_BANGUNAN b on b.IDGEDUNG = a.IDGEDUNG
-      left join LA_LAHAN f on TO_CHAR(f.IDAREAL) = TO_CHAR(a.IDAREAL)`;
+    const params = req.query
+    const lat = (params.lat && params.lat.length>0)? params.lat : -6.230361;
+    const long = (params.long && params.long.length>0) ? params.long : 106.816673;
+    let sql =`SELECT DISTINCT(a.IDGEDUNG),a.IDAREAL, a.COOR_X, a.COOR_Y, a.NAMA_GEDUNG, a.ALAMAT, a.LUAS_BANGUNAN, a.JUMLAH_LANTAI, a.SALEABLE_AREA, b.NAMA_KEGIATAN, a.PATH_GEDUNG_IMAGE,
+    ROUND(
+    (6371* ACOS(
+        COS(RADIANS(a.COOR_Y))
+        * COS(RADIANS(${lat}))
+        * COS(RADIANS(${long}) - RADIANS(a.COOR_X))
+        + SIN(RADIANS(a.COOR_Y))
+        * SIN(RADIANS(${lat}))
+        )
+    ), 1
+    ) AS DISTANCE, 
+    ROW_NUMBER() OVER (ORDER BY a.IDGEDUNG) RN
+    FROM GIS_BANGUNAN_MASTER a 
+    left join LA_PENGGUNAAN_BANGUNAN b on b.IDGEDUNG = a.IDGEDUNG
+    left join LA_LAHAN f on TO_CHAR(f.IDAREAL) = TO_CHAR(a.IDAREAL)`;
 
-  const query = setFilter(sql, params);
-
-  const result = await database.simpleExecute(query, {});
-
-  const transformedList= await result.rows.map(gedung => transform.transformList(gedung));
-
-  return transformedList;
+    const query = setFilter(sql, params);
+    const result = await database.simpleExecute(query, {});
+    const transformedList= await result.rows.map(gedung => transform.transformList(gedung));
+    return transformedList;
 }
 
 async function getAllPagination(req)
 {
     const res ={}
-    const params = req.query
+    const params = req.query    
+    const lat = (params.lat && params.lat.length>0)? params.lat : -6.230361;
+    const long = (params.long && params.long.length>0) ? params.long : 106.816673;
     let per_page=10;
     let page=1;
     if(params.per_page !== undefined){
@@ -40,10 +51,20 @@ async function getAllPagination(req)
     }
 
     const sql=`SELECT DISTINCT(a.IDGEDUNG),a.IDAREAL, a.COOR_X, a.COOR_Y, a.NAMA_GEDUNG, a.ALAMAT, a.LUAS_BANGUNAN, a.JUMLAH_LANTAI, a.SALEABLE_AREA, b.NAMA_KEGIATAN, a.PATH_GEDUNG_IMAGE,
+    ROUND(
+    (6371* ACOS(
+        COS(RADIANS(a.COOR_Y))
+        * COS(RADIANS(${lat}))
+        * COS(RADIANS(${long}) - RADIANS(a.COOR_X))
+        + SIN(RADIANS(a.COOR_Y))
+        * SIN(RADIANS(${lat}))
+        )
+    ), 1
+    ) AS DISTANCE ,
     ROW_NUMBER() OVER (ORDER BY a.IDGEDUNG) RN
-        FROM GIS_BANGUNAN_MASTER a 
-        left join LA_PENGGUNAAN_BANGUNAN b on b.IDGEDUNG = a.IDGEDUNG 
-        left join LA_LAHAN f on TO_CHAR(f.IDAREAL) = TO_CHAR(a.IDAREAL) `;
+    FROM GIS_BANGUNAN_MASTER a 
+    left join LA_PENGGUNAAN_BANGUNAN b on b.IDGEDUNG = a.IDGEDUNG 
+    left join LA_LAHAN f on TO_CHAR(f.IDAREAL) = TO_CHAR(a.IDAREAL) `;
 
     const query = setFilter(sql, params);
     const dataParams = setParams(params);
