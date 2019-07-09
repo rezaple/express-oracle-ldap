@@ -60,6 +60,7 @@ router.route('/lahan/:id')
       .get(lahan.getDetail);
 router.route('/gedung')
       .get(gedung.getAll);
+router.get('/gedung/aset', gedung.getDetailAsetGedung);
 router.route('/gedung/:id')
       .get(gedung.getDetail);
 router.route('/gedung/:id/listrik')

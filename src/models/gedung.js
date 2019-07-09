@@ -172,6 +172,47 @@ async function getDetail(idGedung)
     return result;
 }
 
+async function detailAsetGedung(){
+    const resultAsets = await database.simpleExecute(`SELECT b.ID, b.TREG_ID, b.NAMA, COALESCE(count(a.IDGEDUNG), 0) as total_gedung, COALESCE(SUM(LUAS_BANGUNAN),0) as luas FROM LA_REF_WILAYAH_TELKOM b LEFT JOIN GIS_BANGUNAN_MASTER a ON TO_CHAR(b.ID) = TO_CHAR(a.ID_WITEL) GROUP BY b.ID, b.TREG_ID, b.NAMA ORDER BY b.TREG_ID ASC`,{});
+    const result=[];
+
+    resultAsets.rows.map(aset => {
+        if(result[aset.TREG_ID]===undefined){
+            result[aset.TREG_ID]={
+                id:aset.TREG_ID,
+                nama:`Regional ${aset.TREG_ID}`,
+                aset:{
+                    total:aset.TOTAL_GEDUNG,
+                    luas:aset.LUAS,
+                },
+                witels:[{
+                    id:aset.ID,
+                    nama:`Witel ${aset.ID}`,
+                    aset:{
+                        total: aset.TOTAL_GEDUNG,
+                        luas: aset.LUAS
+                    },
+                }]
+            }
+        }else{
+            result[aset.TREG_ID].aset.total += aset.TOTAL_GEDUNG
+            result[aset.TREG_ID].aset.luas += aset.LUAS
+
+            result[aset.TREG_ID].witels.push({
+                id:aset.ID,
+                nama:`Witel ${aset.ID}`,
+                aset:{
+                    total: aset.TOTAL_GEDUNG,
+                    luas: aset.LUAS
+                },
+            })
+        }
+        
+    })
+
+    return result.filter(function() { return true; });
+}
+
 async function getListrik(id)
 {
     const resTagihanListrik = await database.simpleExecute(`SELECT * FROM LA_LISTRIK_GEDUNG WHERE IDGEDUNG= :ID_GEDUNG ORDER BY TANGGAL DESC`, {ID_GEDUNG: id});
@@ -289,5 +330,6 @@ module.exports={
   nearMe,
   getDetail,
   getListrik,
-  getAir
+  getAir,
+  detailAsetGedung
 };

@@ -82,9 +82,26 @@ async function getTagihanAir(req, res, next) {
   }
 }
 
+async function getDetailAsetGedung(req, res, next) {
+  try {
+    const rows = await gedung.detailAsetGedung();
+      res.status(200).json({
+        status:200,
+        data:rows,
+      });
+    
+  } catch (err) {
+    res.status(500).json({
+      status:500,
+      message:err.message
+    });
+  }
+}
+
 module.exports = {
   getAll,
   getDetail,
   getTagihanListrik,
-  getTagihanAir
+  getTagihanAir,
+  getDetailAsetGedung
 }
