@@ -252,41 +252,81 @@ async function getDetail(idAreal)
     return result;
 }
 
+async function getAsetLahan(condition){
+    const query = `SELECT
+    b.ID,    
+    b.TREG_ID,
+    b.NAMA,
+    COALESCE(count(a.IDAREAL), 0) as total_lahan, 
+    COALESCE(SUM(LUAS_LAHAN),0) as luas
+    FROM
+        LA_REF_WILAYAH_TELKOM b
+    LEFT JOIN LA_LAHAN a
+            ON TO_CHAR(b.ID) = TO_CHAR(a.WILAYAH_TELKOM) ${condition}
+    GROUP BY b.ID, b.TREG_ID, b.NAMA ORDER BY b.TREG_ID ASC`
+    const result = await database.simpleExecute(query, {});
+
+    return result.rows;
+
+    
+}
+
 async function detailAsetLahan(){
-    const res = await database.simpleExecute(`SELECT count(IDAREAL) as total_lahan,SUM(LUAS_LAHAN) AS luas, WILAYAH_TELKOM, TELKOM_REGIONAL FROM LA_LAHAN WHERE WILAYAH_TELKOM IS NOT NULL AND SALEABLE_AREA > 0 GROUP BY WILAYAH_TELKOM, TELKOM_REGIONAL ORDER BY TELKOM_REGIONAL ASC`, {});
+    const resultAsets = await getAsetLahan('AND a.SALEABLE_AREA > 0');
+    const resultIdles = await getAsetLahan('AND (SALEABLE_AREA = 0 OR SALEABLE_AREA IS NULL)');
     const result=[];
 
-    const resIdle = await database.simpleExecute(`SELECT count(IDAREAL) as total_lahan,SUM(LUAS_LAHAN) AS luas, WILAYAH_TELKOM, TELKOM_REGIONAL FROM LA_LAHAN WHERE WILAYAH_TELKOM IS NOT NULL AND (SALEABLE_AREA = 0 OR a.SALEABLE_AREA IS NULL) GROUP BY WILAYAH_TELKOM, TELKOM_REGIONAL ORDER BY TELKOM_REGIONAL ASC`, {});
+    resultAsets.map(aset => {
+        const idle = resultIdles.find(idle => idle.ID === aset.ID);
 
-    res.rows.map(aset => {
-        const luasAset= aset.LUAS?aset.LUAS:0
-
-        if(result[aset.TELKOM_REGIONAL]===undefined){
-            result[aset.TELKOM_REGIONAL]={
-                id:aset.TELKOM_REGIONAL,
-                nama:`Regional ${aset.TELKOM_REGIONAL}`,
-                total:aset.TOTAL_LAHAN,
-                luas:luasAset,
+        if(result[aset.TREG_ID]===undefined){
+            result[aset.TREG_ID]={
+                id:aset.TREG_ID,
+                nama:`Regional ${aset.TREG_ID}`,
+                aset:{
+                    total:aset.TOTAL_LAHAN,
+                    luas:aset.LUAS,
+                },
+                idle:{
+                    total:idle.TOTAL_LAHAN,
+                    luas:idle.LUAS
+                },
                 witels:[{
-                    id:aset.WILAYAH_TELKOM,
-                    nama:`Witel ${aset.WILAYAH_TELKOM}`,
-                    total: aset.TOTAL_LAHAN,
-                    luas: luasAset
+                    id:aset.ID,
+                    nama:`Witel ${aset.ID}`,
+                    aset:{
+                        total: aset.TOTAL_LAHAN,
+                        luas: aset.LUAS
+                    },
+                    idle:{
+                        total:idle.TOTAL_LAHAN,
+                        luas:idle.LUAS
+                    }
                 }]
             }
         }else{
-            result[aset.TELKOM_REGIONAL].total += aset.TOTAL_LAHAN
-            result[aset.TELKOM_REGIONAL].luas += luasAset
+            result[aset.TREG_ID].aset.total += aset.TOTAL_LAHAN
+            result[aset.TREG_ID].aset.luas += aset.LUAS
 
-            result[aset.TELKOM_REGIONAL].witels.push({
-                id:aset.WILAYAH_TELKOM,
-                nama:`Witel ${aset.WILAYAH_TELKOM}`,
-                total: aset.TOTAL_LAHAN,
-                luas: luasAset
+            result[aset.TREG_ID].idle.total += idle.TOTAL_LAHAN
+            result[aset.TREG_ID].idle.luas += idle.LUAS
+
+            result[aset.TREG_ID].witels.push({
+                id:aset.ID,
+                nama:`Witel ${aset.ID}`,
+                aset:{
+                    total: aset.TOTAL_LAHAN,
+                    luas: aset.LUAS
+                },
+                idle:{
+                    total: idle.TOTAL_LAHAN,
+                    luas: idle.LUAS
+                }
             })
         }
         
     })
+
     return result.filter(function() { return true; });
 }
 
