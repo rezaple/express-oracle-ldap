@@ -217,7 +217,6 @@ async function getDetail(idAreal)
         },0) 
         result.potensi_sengketa_lahan = await sengketaPromises
     }
-    
 
     const resGedung = await database.simpleExecute(`SELECT DISTINCT(a.IDGEDUNG),a.IDAREAL, a.COOR_X, a.COOR_Y, a.NAMA_GEDUNG, a.ALAMAT, a.LUAS_BANGUNAN, a.JUMLAH_LANTAI, a.SALEABLE_AREA, b.NAMA_KEGIATAN, a.PATH_GEDUNG_IMAGE,
          ROW_NUMBER() OVER (ORDER BY a.IDGEDUNG) RN
@@ -230,17 +229,6 @@ async function getDetail(idAreal)
     return result;
 }
 
-/**
- * 1 :{
- *  nama:''
- *  data:[
- *     0:{
- *     },
- *     1:{
- *     }
- *  ]
- * }
- */
 async function detailAsetLahan(){
     const res = await database.simpleExecute(`SELECT count(IDAREAL) as total_lahan, WILAYAH_TELKOM, TELKOM_REGIONAL FROM LA_LAHAN WHERE WILAYAH_TELKOM IS NOT NULL GROUP BY WILAYAH_TELKOM, TELKOM_REGIONAL ORDER BY TELKOM_REGIONAL ASC`, {});
     const result=[];
@@ -329,8 +317,17 @@ function setFilter(sql, params)
 
     if(params.status_sertifikat!== undefined && params.status_sertifikat.length > 0){
         const dataStatusSertifikat= params.status_sertifikat.split(',');
-        const statusSertifikat = dataKlasifikasi.map(x => "'" + x + "'").toString();
-        //sql += ` AND ?? IN (${statusSertifikat})`;
+        const tahunJatuhTempo= getJatuhTempo()
+        for(var i = 0; i < dataStatusSertifikat.length; ++i){
+            if(parseInt(dataStatusSertifikat[i])===1)
+                sql += ` AND (d.SKHAK = 'HGB' AND d.TANGGAL_AKHIR > TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD'))`;
+            else if(parseInt(dataStatusSertifikat[i])===2)
+                sql += ` AND d.TANGGAL_AKHIR < TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD')`;
+            else if(parseInt(dataStatusSertifikat[i])===3)
+                sql += ` AND (d.SKHAK = 'HP' AND d.TANGGAL_AKHIR > TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD'))`;
+            else if(parseInt(dataStatusSertifikat[i])===4)
+                sql += ` (AND d.SKHAK = 'HM' AND d.TANGGAL_AKHIR > TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD'))`;
+        }   
     }
 
     if(params.klasifikasi!== undefined && params.klasifikasi.length > 0){
@@ -373,8 +370,17 @@ function setFilterNearMe(sql, params)
 
     if(params.status_sertifikat!== undefined && params.status_sertifikat.length > 0){
         const dataStatusSertifikat= params.status_sertifikat.split(',');
-        const statusSertifikat = dataKlasifikasi.map(x => "'" + x + "'").toString();
-        //sql += ` AND ?? IN (${statusSertifikat})`;
+        const tahunJatuhTempo= getJatuhTempo()
+        for(var i = 0; i < dataStatusSertifikat.length; ++i){
+            if(parseInt(dataStatusSertifikat[i])===1)
+                sql += ` AND (SKHAK = 'HGB' AND TANGGAL_AKHIR > TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD'))`;
+            else if(parseInt(dataStatusSertifikat[i])===2)
+                sql += ` AND TANGGAL_AKHIR < TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD')`;
+            else if(parseInt(dataStatusSertifikat[i])===3)
+                sql += ` AND (SKHAK = 'HP' AND TANGGAL_AKHIR > TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD'))`;
+            else if(parseInt(dataStatusSertifikat[i])===4)
+                sql += ` (AND SKHAK = 'HM' AND TANGGAL_AKHIR > TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD'))`;
+        }   
     }
 
     if(params.klasifikasi!== undefined && params.klasifikasi.length > 0){

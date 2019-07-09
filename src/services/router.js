@@ -20,6 +20,8 @@ router.route('/basedata/penggunaan')
       .get(basedata.getPenggunaan);
 router.route('/basedata/analisis-score')
       .get(basedata.getAnalisisScore);
+router.route('/basedata/status-sertifikat')
+      .get(basedata.getStatusSertifikat);
 router.route('/provinsi')
       .get(area.getProvinces);
 router.route('/provinsi/:idProv/kota')

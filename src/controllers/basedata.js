@@ -45,6 +45,32 @@ async function getAnalisisScore(req, res, next) {
   }
 }
 
+function getStatusSertifikat(req, res, next)
+{
+  res.status(200).json({
+    status:200,
+    data:[
+      {
+        ID:1,
+        name:'HGB'
+      },
+      {
+        ID:2,
+        name:'HGB Jatuh Tempo'
+      },
+      {
+        ID:3,
+        name:'Hak Pakai'
+      },
+      {
+        ID:4,
+        name:'Hak Milik'
+      },
+    ]
+  }); 
+}
+
+
 function getPenggunaan(req, res, next)
 {
   res.status(200).json({
@@ -96,5 +122,6 @@ module.exports = {
   getWitel,
   getStatusKepemilikan,
   getPenggunaan,
-  getAnalisisScore
+  getAnalisisScore,
+  getStatusSertifikat
 }
