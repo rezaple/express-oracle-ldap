@@ -253,27 +253,36 @@ async function getDetail(idAreal)
 }
 
 async function detailAsetLahan(){
-    const res = await database.simpleExecute(`SELECT count(IDAREAL) as total_lahan, WILAYAH_TELKOM, TELKOM_REGIONAL FROM LA_LAHAN WHERE WILAYAH_TELKOM IS NOT NULL GROUP BY WILAYAH_TELKOM, TELKOM_REGIONAL ORDER BY TELKOM_REGIONAL ASC`, {});
+    const res = await database.simpleExecute(`SELECT count(IDAREAL) as total_lahan,SUM(LUAS_LAHAN) AS luas, WILAYAH_TELKOM, TELKOM_REGIONAL FROM LA_LAHAN WHERE WILAYAH_TELKOM IS NOT NULL AND SALEABLE_AREA > 0 GROUP BY WILAYAH_TELKOM, TELKOM_REGIONAL ORDER BY TELKOM_REGIONAL ASC`, {});
     const result=[];
-     res.rows.map(aset => {
+
+    const resIdle = await database.simpleExecute(`SELECT count(IDAREAL) as total_lahan,SUM(LUAS_LAHAN) AS luas, WILAYAH_TELKOM, TELKOM_REGIONAL FROM LA_LAHAN WHERE WILAYAH_TELKOM IS NOT NULL AND (SALEABLE_AREA = 0 OR a.SALEABLE_AREA IS NULL) GROUP BY WILAYAH_TELKOM, TELKOM_REGIONAL ORDER BY TELKOM_REGIONAL ASC`, {});
+
+    res.rows.map(aset => {
+        const luasAset= aset.LUAS?aset.LUAS:0
+
         if(result[aset.TELKOM_REGIONAL]===undefined){
             result[aset.TELKOM_REGIONAL]={
                 id:aset.TELKOM_REGIONAL,
                 nama:`Regional ${aset.TELKOM_REGIONAL}`,
-                total:0,
+                total:aset.TOTAL_LAHAN,
+                luas:luasAset,
                 witels:[{
                     id:aset.WILAYAH_TELKOM,
                     nama:`Witel ${aset.WILAYAH_TELKOM}`,
-                    total: aset.TOTAL_LAHAN
+                    total: aset.TOTAL_LAHAN,
+                    luas: luasAset
                 }]
             }
         }else{
             result[aset.TELKOM_REGIONAL].total += aset.TOTAL_LAHAN
+            result[aset.TELKOM_REGIONAL].luas += luasAset
 
             result[aset.TELKOM_REGIONAL].witels.push({
                 id:aset.WILAYAH_TELKOM,
                 nama:`Witel ${aset.WILAYAH_TELKOM}`,
-                total: aset.TOTAL_LAHAN
+                total: aset.TOTAL_LAHAN,
+                luas: luasAset
             })
         }
         

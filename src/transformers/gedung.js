@@ -12,7 +12,7 @@ function transformList(data){
         NAMA_KEGIATAN: data.NAMA_KEGIATAN?data.NAMA_KEGIATAN:"",
         PATH_GEDUNG_IMAGE: data.PATH_GEDUNG_IMAGE?'http://mrra.telkom.co.id/gis/assets'+data.PATH_GEDUNG_IMAGE:"",
         RN: data.RN,
-        DISTANCE: data.DISTANCE.toFixed(2)
+        DISTANCE: data.DISTANCE? data.DISTANCE.toFixed(2):0
     }
 }
 
