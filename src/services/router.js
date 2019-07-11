@@ -14,8 +14,8 @@ router.route('/basedata/regional/:id/witel')
       .get(basedata.getWitel);
 router.route('/basedata/witel')
       .get(basedata.getWitel);
-router.route('/basedata/status-kepemilikan')
-      .get(basedata.getStatusKepemilikan);
+// router.route('/basedata/status-kepemilikan')
+//       .get(basedata.getStatusKepemilikan);
 router.route('/basedata/penggunaan')
       .get(basedata.getPenggunaan);
 router.route('/basedata/analisis-score')
@@ -32,6 +32,8 @@ router.route('/kota/:idCity/kecamatan')
       .get(area.getSubDistricts);
 router.route('/login')
       .post(auth.login);
+router.route('/upload/image')
+      .post(area.uploadImage);
 
 //area need authenticate
 router.use(function (req, res, next) {

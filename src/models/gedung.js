@@ -2,17 +2,12 @@ const database = require('../services/database.js');
 const transform = require('../transformers/gedung.js');
 const url = require('url');
 
-/**
- * 
- * @param {TODO} req 
- * Pebaiki API penggunaan
- */
 async function getAll(req)
 {
     const params = req.query
     const lat = (params.lat && params.lat.length>0)? params.lat : -6.230361;
     const long = (params.long && params.long.length>0) ? params.long : 106.816673;
-    let sql =`SELECT DISTINCT(a.IDGEDUNG),a.IDAREAL, a.COOR_X, a.COOR_Y, a.NAMA_GEDUNG, a.ALAMAT, a.LUAS_BANGUNAN, a.JUMLAH_LANTAI, a.SALEABLE_AREA, b.NAMA_KEGIATAN, a.PATH_GEDUNG_IMAGE,
+    let sql =`SELECT DISTINCT(a.IDGEDUNG),a.IDAREAL, a.COOR_X, a.COOR_Y, a.NAMA_GEDUNG, a.ALAMAT, a.LUAS_BANGUNAN, a.JUMLAH_LANTAI, a.SALEABLE_AREA, a.PATH_GEDUNG_IMAGE,
     ROUND(
     (6371* ACOS(
         COS(RADIANS(a.COOR_Y))
@@ -25,8 +20,8 @@ async function getAll(req)
     ) AS DISTANCE, 
     ROW_NUMBER() OVER (ORDER BY a.IDGEDUNG) RN
     FROM GIS_BANGUNAN_MASTER a 
-    left join LA_PENGGUNAAN_BANGUNAN b on b.IDGEDUNG = a.IDGEDUNG
-    left join LA_LAHAN f on TO_CHAR(f.IDAREAL) = TO_CHAR(a.IDAREAL)`;
+    LEFT JOIN LA_PENGGUNAAN_GEDUNG b on b.ID_GEDUNG = a.IDGEDUNG
+    LEFT JOIN LA_LAHAN f on TO_CHAR(f.IDAREAL) = TO_CHAR(a.IDAREAL)`;
 
     const query = setFilter(sql, params);
     const result = await database.simpleExecute(query, {});
@@ -50,7 +45,7 @@ async function getAllPagination(req)
         page=parseInt(params.page,10);
     }
 
-    const sql=`SELECT DISTINCT(a.IDGEDUNG),a.IDAREAL, a.COOR_X, a.COOR_Y, a.NAMA_GEDUNG, a.ALAMAT, a.LUAS_BANGUNAN, a.JUMLAH_LANTAI, a.SALEABLE_AREA, b.NAMA_KEGIATAN, a.PATH_GEDUNG_IMAGE,
+    const sql=`SELECT DISTINCT(a.IDGEDUNG),a.IDAREAL, a.COOR_X, a.COOR_Y, a.NAMA_GEDUNG, a.ALAMAT, a.LUAS_BANGUNAN, a.JUMLAH_LANTAI, a.SALEABLE_AREA, a.PATH_GEDUNG_IMAGE,
     ROUND(
     (6371* ACOS(
         COS(RADIANS(a.COOR_Y))
@@ -63,8 +58,8 @@ async function getAllPagination(req)
     ) AS DISTANCE ,
     ROW_NUMBER() OVER (ORDER BY a.IDGEDUNG) RN
     FROM GIS_BANGUNAN_MASTER a 
-    left join LA_PENGGUNAAN_BANGUNAN b on b.IDGEDUNG = a.IDGEDUNG 
-    left join LA_LAHAN f on TO_CHAR(f.IDAREAL) = TO_CHAR(a.IDAREAL) `;
+    LEFT JOIN LA_PENGGUNAAN_GEDUNG b on b.ID_GEDUNG = a.IDGEDUNG 
+    LEFT JOIN LA_LAHAN f on TO_CHAR(f.IDAREAL) = TO_CHAR(a.IDAREAL) `;
 
     const query = setFilter(sql, params);
     const dataParams = setParams(params);
@@ -101,7 +96,7 @@ async function nearMe(params)
     const distance =(params.distance && params.distance.length>0)?params.distance:5;
 
     const sql=`SELECT * FROM (
-        SELECT DISTINCT(a.IDGEDUNG),a.IDAREAL, a.COOR_X, a.COOR_Y, a.NAMA_GEDUNG, a.ALAMAT, a.LUAS_BANGUNAN, a.JUMLAH_LANTAI, a.SALEABLE_AREA, b.NAMA_KEGIATAN, a.PATH_GEDUNG_IMAGE,f.STATUS_KEPEMILIKAN,
+        SELECT DISTINCT(a.IDGEDUNG),a.IDAREAL, a.COOR_X, a.COOR_Y, a.NAMA_GEDUNG, a.ALAMAT, a.LUAS_BANGUNAN, a.JUMLAH_LANTAI, a.SALEABLE_AREA, b.ID_PENGGUNAAN, a.PATH_GEDUNG_IMAGE,f.STATUS_KEPEMILIKAN,
         ROUND(
         (6371* ACOS(
             COS(RADIANS(a.COOR_Y))
@@ -113,7 +108,7 @@ async function nearMe(params)
         ), 1
         ) AS DISTANCE 
         FROM GIS_BANGUNAN_MASTER a 
-        left join LA_PENGGUNAAN_BANGUNAN b on b.IDGEDUNG = a.IDGEDUNG
+        left join LA_PENGGUNAAN_GEDUNG b on b.ID_GEDUNG = a.IDGEDUNG
         left join LA_LAHAN f on TO_CHAR(f.IDAREAL) = TO_CHAR(a.IDAREAL) ) x WHERE DISTANCE <=${distance}`;
 
     const query = setFilterNearMe(sql, params);
@@ -262,6 +257,12 @@ function setFilter(sql, params)
         sql += ` WHERE a.ID_PROPINSI=31`;
     }
 
+    if(params.penggunaan!== undefined && params.penggunaan.length > 0){
+        const dataPenggunaan= params.penggunaan.split(',');
+        const penggunaan = dataPenggunaan.map(x => x ).toString();
+        sql += ` AND b.ID_PENGGUNAAN IN (${penggunaan})`;
+    }
+
     if(params.nama!== undefined && params.nama.length > 0){
         const nama=params.nama;
         sql += ` AND regexp_like(a.NAMA_GEDUNG, '${nama}', 'i')`;
@@ -282,6 +283,12 @@ function setFilterNearMe(sql, params)
         const luas = params.luas.split('-');
         if(luas.length ===2)
             sql += ` AND LUAS_BANGUNAN BETWEEN ${luas[0]} AND ${luas[1]}`;
+    }
+
+    if(params.penggunaan!== undefined && params.penggunaan.length > 0){
+        const dataPenggunaan= params.penggunaan.split(',');
+        const penggunaan = dataPenggunaan.map(x => x ).toString();
+        sql += ` AND ID_PENGGUNAAN IN (${penggunaan})`;
     }
 
     if(params.nama !== undefined && params.nama.length > 0){
@@ -315,6 +322,10 @@ function setParams(params)
 
     if(params['luas']!==undefined){
         dataParams+= '&luas='.params.luas;
+    }
+
+    if(params['penggunaan']!==undefined){
+        dataParams+= '&penggunaan='.params.penggunaan;
     }
 
     if(params.nama!==undefined){

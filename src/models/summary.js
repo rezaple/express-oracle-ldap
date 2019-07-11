@@ -27,7 +27,7 @@ async function getSummaryLahan()
 
 async function getSummaryGedung()
 {
-  let query ="SELECT count(IDGEDUNG) as total_gedung , SUM(LUAS_BANGUNAN) as total_luas_bangunan FROM LA_GEDUNG";
+  let query ="SELECT count(IDGEDUNG) as total_gedung , SUM(LUAS_BANGUNAN) as total_luas_bangunan FROM GIS_BANGUNAN_MASTER";
   const binds = {};
 
   const result = await database.simpleExecute(query, binds);

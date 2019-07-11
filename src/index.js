@@ -85,8 +85,3 @@ process.on('uncaughtException', err => {
 
   shutdown(err);
 });
-
-// app.use("/api/auth", auth);
-// app.use("/api/users", users);
-// app.use("/api/books", books);
-// app.listen(8080, () => console.log("Running on localhost:8080"));

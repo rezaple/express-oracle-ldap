@@ -35,6 +35,16 @@ async function getStatusKepemilikan()
   return result.rows;
 }
 
+async function getStatusPenggunaan()
+{
+  let query ="SELECT ID, NAMA, ALIAS FROM LA_PENGGUNAAN WHERE IS_FILTER=1";
+  const binds = {};
+
+  const result = await database.simpleExecute(query, binds);
+
+  return result.rows;
+}
+
 async function getAnalisisScore()
 {
   let query =`SELECT ID, NAMA_KLASIFIKASI, 
@@ -57,4 +67,5 @@ module.exports={
   getStatusKepemilikan,
   getRegional,
   getAnalisisScore,
+  getStatusPenggunaan
 };

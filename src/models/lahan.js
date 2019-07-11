@@ -241,10 +241,10 @@ async function getDetail(idAreal)
         result.potensi_sengketa_lahan = await sengketaPromises
     }
 
-    const resGedung = await database.simpleExecute(`SELECT DISTINCT(a.IDGEDUNG),a.IDAREAL, a.COOR_X, a.COOR_Y, a.NAMA_GEDUNG, a.ALAMAT, a.LUAS_BANGUNAN, a.JUMLAH_LANTAI, a.SALEABLE_AREA, b.NAMA_KEGIATAN, a.PATH_GEDUNG_IMAGE,
+    const resGedung = await database.simpleExecute(`SELECT DISTINCT(a.IDGEDUNG),a.IDAREAL, a.COOR_X, a.COOR_Y, a.NAMA_GEDUNG, a.ALAMAT, a.LUAS_BANGUNAN, a.JUMLAH_LANTAI, a.SALEABLE_AREA, a.PATH_GEDUNG_IMAGE,
          ROW_NUMBER() OVER (ORDER BY a.IDGEDUNG) RN
              FROM GIS_BANGUNAN_MASTER a 
-             left join LA_PENGGUNAAN_BANGUNAN b on b.IDGEDUNG = a.IDGEDUNG
+             left join LA_PENGGUNAAN_GEDUNG b on b.ID_GEDUNG = a.IDGEDUNG
              left join LA_LAHAN f on TO_CHAR(f.IDAREAL) = TO_CHAR(a.IDAREAL) 
              WHERE a.IDAREAL = :ID_AREAL`,{ID_AREAL: idAreal});
     result.list_gedung = resGedung.rows.length > 0 ? resGedung.rows.map(gedung=>transform.transformListGedung(gedung)) : [];
@@ -252,7 +252,8 @@ async function getDetail(idAreal)
     return result;
 }
 
-async function getAsetLahan(condition){
+//luas aset idle lahan dari saleable area datanya
+async function getAsetLahan(){
     const query = `SELECT
     b.ID,    
     b.TREG_ID,
@@ -262,7 +263,24 @@ async function getAsetLahan(condition){
     FROM
         LA_REF_WILAYAH_TELKOM b
     LEFT JOIN LA_LAHAN a
-            ON TO_CHAR(b.ID) = TO_CHAR(a.WILAYAH_TELKOM) ${condition}
+            ON TO_CHAR(b.ID) = TO_CHAR(a.WILAYAH_TELKOM) AND (a.SALEABLE_AREA = 0 OR a.SALEABLE_AREA IS NULL)
+    GROUP BY b.ID, b.TREG_ID, b.NAMA ORDER BY b.TREG_ID ASC`
+    const result = await database.simpleExecute(query, {});
+
+    return result.rows;
+}
+
+async function getAsetLahanIdle(){
+    const query = `SELECT
+    b.ID,    
+    b.TREG_ID,
+    b.NAMA,
+    COALESCE(count(a.IDAREAL), 0) as total_lahan, 
+    COALESCE(SUM(a.SALEABLE_AREA),0) as luas
+    FROM
+        LA_REF_WILAYAH_TELKOM b
+    LEFT JOIN LA_LAHAN a
+            ON TO_CHAR(b.ID) = TO_CHAR(a.WILAYAH_TELKOM) AND a.SALEABLE_AREA > 0
     GROUP BY b.ID, b.TREG_ID, b.NAMA ORDER BY b.TREG_ID ASC`
     const result = await database.simpleExecute(query, {});
 
@@ -270,8 +288,8 @@ async function getAsetLahan(condition){
 }
 
 async function detailAsetLahan(){
-    const resultAsets = await getAsetLahan('AND a.SALEABLE_AREA > 0');
-    const resultIdles = await getAsetLahan('AND (SALEABLE_AREA = 0 OR SALEABLE_AREA IS NULL)');
+    const resultAsets = await getAsetLahan();
+    const resultIdles = await getAsetLahanIdle();
     const result=[];
 
     resultAsets.map(aset => {
@@ -413,7 +431,7 @@ function setFilter(sql, params)
 
     if(params.luas!== undefined){
         const luas=params.luas.split('-');
-        if(luas.length ==2)
+        if(luas.length ===2)
             sql += ` AND a.LUAS_LAHAN BETWEEN ${luas[0]} AND ${luas[1]}`;
     }
 
