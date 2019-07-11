@@ -242,11 +242,13 @@ async function getDetail(idAreal)
     }
 
     const resGedung = await database.simpleExecute(`SELECT DISTINCT(a.IDGEDUNG),a.IDAREAL, a.COOR_X, a.COOR_Y, a.NAMA_GEDUNG, a.ALAMAT, a.LUAS_BANGUNAN, a.JUMLAH_LANTAI, a.SALEABLE_AREA, a.PATH_GEDUNG_IMAGE,
-         ROW_NUMBER() OVER (ORDER BY a.IDGEDUNG) RN
+         ROW_NUMBER() OVER (ORDER BY a.IDGEDUNG) RN,
+             Wm_Concat(c.NAMA) NAMA_KEGIATAN
              FROM GIS_BANGUNAN_MASTER a 
-             left join LA_PENGGUNAAN_GEDUNG b on b.ID_GEDUNG = a.IDGEDUNG
-             left join LA_LAHAN f on TO_CHAR(f.IDAREAL) = TO_CHAR(a.IDAREAL) 
-             WHERE a.IDAREAL = :ID_AREAL`,{ID_AREAL: idAreal});
+             LEFT JOIN LA_PENGGUNAAN_GEDUNG b on b.ID_GEDUNG = a.IDGEDUNG
+             LEFT JOIN LA_PENGGUNAAN c on b.ID_PENGGUNAAN = c.ID 
+             LEFT JOIN LA_LAHAN f on TO_CHAR(f.IDAREAL) = TO_CHAR(a.IDAREAL) 
+             WHERE a.IDAREAL = :ID_AREAL GROUP BY a.IDGEDUNG, a.IDAREAL, a.COOR_X, a.COOR_Y, a.NAMA_GEDUNG, a.ALAMAT, a.LUAS_BANGUNAN, a.JUMLAH_LANTAI, a.SALEABLE_AREA, a.PATH_GEDUNG_IMAGE`,{ID_AREAL: idAreal});
     result.list_gedung = resGedung.rows.length > 0 ? resGedung.rows.map(gedung=>transform.transformListGedung(gedung)) : [];
 
     return result;
