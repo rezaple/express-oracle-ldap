@@ -18,13 +18,16 @@ async function getAll(req)
         )
     ), 1
     ) AS DISTANCE, 
-    ROW_NUMBER() OVER (ORDER BY a.IDGEDUNG) RN
+    ROW_NUMBER() OVER (ORDER BY a.IDGEDUNG) RN,
+    Wm_Concat(c.NAMA) NAMA_KEGIATAN
     FROM GIS_BANGUNAN_MASTER a 
     LEFT JOIN LA_PENGGUNAAN_GEDUNG b on b.ID_GEDUNG = a.IDGEDUNG
+    LEFT JOIN LA_PENGGUNAAN c on b.ID_PENGGUNAAN = c.ID 
     LEFT JOIN LA_LAHAN f on TO_CHAR(f.IDAREAL) = TO_CHAR(a.IDAREAL)`;
 
     const query = setFilter(sql, params);
-    const result = await database.simpleExecute(query, {});
+    const result = await database.simpleExecute(`${query} GROUP BY a.IDGEDUNG, a.IDAREAL, a.COOR_X, a.COOR_Y, a.NAMA_GEDUNG, a.ALAMAT, a.LUAS_BANGUNAN, a.JUMLAH_LANTAI, a.SALEABLE_AREA, a.PATH_GEDUNG_IMAGE
+    `, {});
     const transformedList= await result.rows.map(gedung => transform.transformList(gedung));
     return transformedList;
 }
@@ -56,21 +59,23 @@ async function getAllPagination(req)
         )
     ), 1
     ) AS DISTANCE ,
-    ROW_NUMBER() OVER (ORDER BY a.IDGEDUNG) RN
+    ROW_NUMBER() OVER (ORDER BY a.IDGEDUNG) RN,
+    Wm_Concat(c.NAMA) NAMA_KEGIATAN
     FROM GIS_BANGUNAN_MASTER a 
-    LEFT JOIN LA_PENGGUNAAN_GEDUNG b on b.ID_GEDUNG = a.IDGEDUNG 
+    LEFT JOIN LA_PENGGUNAAN_GEDUNG b on b.ID_GEDUNG = a.IDGEDUNG
+    LEFT JOIN LA_PENGGUNAAN c on b.ID_PENGGUNAAN = c.ID 
     LEFT JOIN LA_LAHAN f on TO_CHAR(f.IDAREAL) = TO_CHAR(a.IDAREAL) `;
 
     const query = setFilter(sql, params);
     const dataParams = setParams(params);
     
-    const totalQuery = await database.simpleExecute(`SELECT count(*) as total_count FROM(${query})`, {});
+    const totalQuery = await database.simpleExecute(`SELECT count(*) as total_count FROM(${query} GROUP BY a.IDGEDUNG, a.IDAREAL, a.COOR_X, a.COOR_Y, a.NAMA_GEDUNG, a.ALAMAT, a.LUAS_BANGUNAN, a.JUMLAH_LANTAI, a.SALEABLE_AREA, a.PATH_GEDUNG_IMAGE)`, {});
     const total= totalQuery.rows[0].TOTAL_COUNT;
     const totalPages=Math.ceil(total/per_page);
     const awal=(page===1)?1:((page-1)*per_page+1);
     const akhir=(page===1)?per_page:(page*per_page);
 
-    const result = await database.simpleExecute(`SELECT * FROM(${query})
+    const result = await database.simpleExecute(`SELECT * FROM(${query} GROUP BY a.IDGEDUNG, a.IDAREAL, a.COOR_X, a.COOR_Y, a.NAMA_GEDUNG, a.ALAMAT, a.LUAS_BANGUNAN, a.JUMLAH_LANTAI, a.SALEABLE_AREA, a.PATH_GEDUNG_IMAGE)
     WHERE RN >= ${awal} AND RN <= ${akhir}`, {});
     const transformedList= await result.rows.map(gedung => transform.transformList(gedung));
     res.data = transformedList
@@ -106,10 +111,12 @@ async function nearMe(params)
             * SIN(RADIANS(${lat}))
             )
         ), 1
-        ) AS DISTANCE 
+        ) AS DISTANCE,
+        Wm_Concat(c.NAMA) NAMA_KEGIATAN 
         FROM GIS_BANGUNAN_MASTER a 
-        left join LA_PENGGUNAAN_GEDUNG b on b.ID_GEDUNG = a.IDGEDUNG
-        left join LA_LAHAN f on TO_CHAR(f.IDAREAL) = TO_CHAR(a.IDAREAL) ) x WHERE DISTANCE <=${distance}`;
+        LEFT JOIN LA_PENGGUNAAN_GEDUNG b on b.ID_GEDUNG = a.IDGEDUNG
+        LEFT JOIN LA_PENGGUNAAN c on b.ID_PENGGUNAAN = c.ID
+        LEFT JOIN LA_LAHAN f on TO_CHAR(f.IDAREAL) = TO_CHAR(a.IDAREAL) GROUP BY a.IDGEDUNG, a.IDAREAL, a.COOR_X, a.COOR_Y, a.NAMA_GEDUNG, a.ALAMAT, a.LUAS_BANGUNAN, a.JUMLAH_LANTAI, a.SALEABLE_AREA, b.ID_PENGGUNAAN, a.PATH_GEDUNG_IMAGE,f.STATUS_KEPEMILIKAN ) x WHERE DISTANCE <=${distance}`;
 
     const query = setFilterNearMe(sql, params);
     const result = await database.simpleExecute(query, {});
@@ -292,7 +299,7 @@ function setFilterNearMe(sql, params)
     }
 
     if(params.nama !== undefined && params.nama.length > 0){
-        const nama=params['nama'];
+        const nama=params.nama;
         sql += ` AND regexp_like(NAMA_GEDUNG, '${nama}', 'i')`;
     }
     
@@ -320,16 +327,16 @@ function setParams(params)
         dataParams+= '&provinsi=31';
     }
 
-    if(params['luas']!==undefined){
-        dataParams+= '&luas='.params.luas;
+    if(params.luas!==undefined){
+        dataParams+= '&luas='+params.luas;
     }
 
-    if(params['penggunaan']!==undefined){
-        dataParams+= '&penggunaan='.params.penggunaan;
+    if(params.penggunaan!==undefined){
+        dataParams+= '&penggunaan='+params.penggunaan;
     }
 
     if(params.nama!==undefined){
-        dataParams+= '&nama='.params.nama;
+        dataParams+= '&nama='+params.nama;
     }
 
     return dataParams;

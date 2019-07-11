@@ -7,6 +7,7 @@ const summary = require('../controllers/summary');
 const area = require('../controllers/area');
 const lahan = require('../controllers/lahan');
 const gedung = require('../controllers/gedung');
+const requestAsset = require('../controllers/requestAsset');
 
 router.route('/basedata/regional')
       .get(basedata.getRegional);
@@ -46,6 +47,7 @@ router.use(function (req, res, next) {
           message:'The user credentials were incorrect.',
         });
       } else {
+       req.currentUser = decoded;
         next();
       }
     });
@@ -78,4 +80,14 @@ router.route('/klasifikasi/aset')
 router.route('/status-tanah/aset')
       .get(summary.getDetailStatusTanah);
 
+router.route('/request-assets')
+      .get(requestAsset.listAssets);
+router.route('/request-assets/:id/gedung')
+      .get(requestAsset.getRequestAssetGedung);
+router.route('/request-assets/:id/lahan')
+      .get(requestAsset.getRequestAssetLahan);
+router.route('/request-assets/:id/lahan')
+      .post(requestAsset.storeRequestAssetLahan);
+router.route('/request-assets/:id/gedung')
+      .post(requestAsset.storeRequestAssetGedung);
 module.exports = router;

@@ -484,7 +484,7 @@ function setFilterNearMe(sql, params)
     }
 
     if(params.nama !== undefined && params.nama.length > 0){
-        const nama=params['nama'];
+        const nama=params.nama;
         sql += ` AND regexp_like(NAMA_LAHAN, '${nama}', 'i')`;
     }
     
@@ -503,7 +503,7 @@ function setParams(params)
            dataParams+= '&kota='+params.kota; 
         }
         if(params.kec !==undefined){
-            dataParams+= '&kec='.params.kec;
+            dataParams+= '&kec='+params.kec;
         }
     //by witel
     }else if(params.witel !==undefined){

@@ -9,7 +9,7 @@ function transformList(data){
         LUAS_BANGUNAN: data.LUAS_BANGUNAN?parseInt(data.LUAS_BANGUNAN,10):0,
         JUMLAH_LANTAI: data.JUMLAH_LANTAI?parseInt(data.JUMLAH_LANTAI,10):0,
         SALEABLE_AREA: data.SALEABLE_AREA?parseInt(data.SALEABLE_AREA,10):0,
-        // NAMA_KEGIATAN: data.NAMA_KEGIATAN?data.NAMA_KEGIATAN:"",
+        NAMA_KEGIATAN: data.NAMA_KEGIATAN?data.NAMA_KEGIATAN:"",
         PATH_GEDUNG_IMAGE: data.PATH_GEDUNG_IMAGE?'http://mrra.telkom.co.id/gis/assets'+data.PATH_GEDUNG_IMAGE:"",
         RN: data.RN,
         DISTANCE: data.DISTANCE? parseFloat(data.DISTANCE.toFixed(2)):0
