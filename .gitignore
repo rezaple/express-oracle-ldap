@@ -4,3 +4,4 @@ node_modules
 docker-compose.yml
 docker-compose.yaml
 Dockerfile
+public/images/*
