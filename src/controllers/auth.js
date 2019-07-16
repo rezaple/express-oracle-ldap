@@ -8,7 +8,7 @@ async function login(req, res, next) {
     if (!req.body.nik || !req.body.password) {
       res.status(400).json({
         status:400,
-        message:'NIK atau kata sandi dibutuhkan.',
+        message:req.body,
       });
     }else{
       const context = {};

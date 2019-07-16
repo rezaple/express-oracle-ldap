@@ -31,6 +31,7 @@ function transformGedungMaster(data){
         TREG: data.TREG?data.TREG:"",
         WITEL: data.WITEL?data.WITEL:"",
         UNIT_GSD: data.UNIT_GSD?data.UNIT_GSD:"",
+        DISTANCE: data.DISTANCE,
         LUAS_BANGUNAN: data.LUAS_BANGUNAN?parseInt(data.LUAS_BANGUNAN,10):0,
         JUMLAH_LANTAI: data.JUMLAH_LANTAI?parseInt(data.JUMLAH_LANTAI,10):0,
         SALEABLE_AREA: data.SALEABLE_AREA?parseInt(data.SALEABLE_AREA,10):0,

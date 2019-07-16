@@ -125,12 +125,24 @@ async function nearMe(params)
     return transformedList;
 }
 
-async function getDetail(idGedung)
+async function getDetail(params, idGedung)
 {
     let result={};
+    const lat = (params.lat && params.lat.length>0)? params.lat : -6.230361;
+    const long = (params.long && params.long.length>0) ? params.long : 106.816673;
 
     let res = await database.simpleExecute(`SELECT a.IDGEDUNG,a.IDAREAL,a.NAMA_GEDUNG,b.COOR_X,b.COOR_Y,a.ALAMAT, a.DESA, a.KECAMATAN, a.KOTA, a.PROPINSI, a.TREG, a.WITEL, a.UNIT_GSD,a.IDAREAL,
-    a.LUAS_BANGUNAN, b.LUAS_LAHAN, a.JUMLAH_LANTAI, a.OCCUPACY_RATE, a.SALEABLE_AREA, a.PATH_GEDUNG_IMAGE
+    a.LUAS_BANGUNAN, b.LUAS_LAHAN, a.JUMLAH_LANTAI, a.OCCUPACY_RATE, a.SALEABLE_AREA, a.PATH_GEDUNG_IMAGE,
+    ROUND(
+        (6371* ACOS(
+            COS(RADIANS(a.COOR_Y))
+            * COS(RADIANS(${lat}))
+            * COS(RADIANS(${long}) - RADIANS(a.COOR_X))
+            + SIN(RADIANS(a.COOR_Y))
+            * SIN(RADIANS(${lat}))
+            )
+        ), 1
+        ) AS DISTANCE
     FROM GIS_BANGUNAN_MASTER a 
                     left join LA_LAHAN b on TO_CHAR(a.IDAREAL) = TO_CHAR(b.IDAREAL)
            WHERE TO_CHAR(a.IDGEDUNG) = ${idGedung} AND ROWNUM <= 1`, {});

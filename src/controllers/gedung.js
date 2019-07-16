@@ -29,7 +29,7 @@ async function getAll(req, res, next) {
 async function getDetail(req, res, next) {
   try {
     const id = parseInt(req.params.id, 10);
-    const rows = await gedung.getDetail(id);
+    const rows = await gedung.getDetail(req.query, id);
 
     if(rows.gedung_master===undefined || rows.gedung_master ===""){
       res.status(404).json({

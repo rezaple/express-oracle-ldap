@@ -33,8 +33,6 @@ router.route('/kota/:idCity/kecamatan')
       .get(area.getSubDistricts);
 router.route('/login')
       .post(auth.login);
-router.route('/upload/image')
-      .post(area.uploadImage);
 
 //area need authenticate
 router.use(function (req, res, next) {
@@ -86,8 +84,22 @@ router.route('/request-assets/:id/gedung')
       .get(requestAsset.getRequestAssetGedung);
 router.route('/request-assets/:id/lahan')
       .get(requestAsset.getRequestAssetLahan);
-router.route('/request-assets/:id/lahan')
-      .post(requestAsset.storeRequestAssetLahan);
-router.route('/request-assets/:id/gedung')
-      .post(requestAsset.storeRequestAssetGedung);
+router.route('/upload/image')
+      .post(requestAsset.uploadImage);
+router.post(
+      '/request-lahan', 
+      requestAsset.validate('createLahan'), 
+      requestAsset.storeRequestAssetLahan)
+router.post(
+      '/request-lahan/:id', 
+      requestAsset.validate('createLahan'), 
+      requestAsset.updateRequestAssetLahan)
+router.post(
+      '/request-gedung', 
+      requestAsset.validate('createGedung'), 
+      requestAsset.storeRequestAssetGedung)
+router.post(
+      '/request-gedung/:id', 
+      requestAsset.validate('createGedung'), 
+      requestAsset.updateRequestAssetGedung)
 module.exports = router;

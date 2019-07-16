@@ -198,11 +198,23 @@ async function nearMe(params)
     return transformedListLahan;
 }
 
-async function getDetail(idAreal)
+async function getDetail(params, idAreal)
 {
     let result={};
+    const lat =  (params.lat && params.lat.length>0) ? params.lat : -6.230361;
+    const long = (params.long && params.long.length>0) ? params.long : 106.816673;
 
-    let res = await database.simpleExecute(`SELECT a.IDAREAL,a.NAMA_LAHAN,a.ALAMAT,a.COOR_X,a.COOR_Y,a.LUAS_LAHAN, a.ID_PROPINSI, a.PROPINSI,a.ID_KOTA,a.KOTA, a.ID_KECAMATAN, a.KECAMATAN, a.ID_DESA, a.DESA, a.ID_TREG, a.TREG, a.ID_WITEL, a.WITEL, a.PATH_LAHAN_IMAGE,c.NAMA_KLASIFIKASI, h.NAMA as NAMA_STATUS_KEPEMILIKAN FROM GIS_LAHAN_MASTER a 
+    let res = await database.simpleExecute(`SELECT a.IDAREAL,a.NAMA_LAHAN,a.ALAMAT,a.COOR_X,a.COOR_Y,a.LUAS_LAHAN, a.ID_PROPINSI, a.PROPINSI,a.ID_KOTA,a.KOTA, a.ID_KECAMATAN, a.KECAMATAN, a.ID_DESA, a.DESA, a.ID_TREG, a.TREG, a.ID_WITEL, a.WITEL, a.PATH_LAHAN_IMAGE,c.NAMA_KLASIFIKASI, h.NAMA as NAMA_STATUS_KEPEMILIKAN, 
+    ROUND(
+    (6371* ACOS(
+        COS(RADIANS(a.COOR_Y))
+        * COS(RADIANS(${lat}))
+        * COS(RADIANS(${long}) - RADIANS(a.COOR_X))
+        + SIN(RADIANS(a.COOR_Y))
+        * SIN(RADIANS(${lat}))
+        )
+    ), 1
+    ) AS DISTANCE FROM  GIS_LAHAN_MASTER a 
     left join LA_ANALISIS_SCORE b on TO_CHAR(a.\"IDAREAL\") = TO_CHAR(b.\"IDAREAL\") 
     left join LA_REF_ANALISIS_SCORE_KLAS c on TO_NUMBER(b.\"KLASIFIKASI\") = c.\"ID\" 
     left join LA_REF_STATUS_KEPEMILIKAN h on a.STATUS_KEPEMILIKAN = h.ID

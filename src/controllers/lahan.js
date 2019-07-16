@@ -29,7 +29,7 @@ async function getAll(req, res, next) {
 async function getDetail(req, res, next) {
   try {
     const idAreal = parseInt(req.params.id, 10);
-    const rows = await lahan.getDetail(idAreal);
+    const rows = await lahan.getDetail(req.query, idAreal);
     if(rows.lahan_master===undefined || rows.lahan_master ===""){
       res.status(404).json({
         status:404,

@@ -153,6 +153,7 @@ function transformLahanMaster(lahan){
     TREG:lahan.TREG?lahan.TREG:"",
     ID_WITEL:lahan.ID_WITEL?parseInt(lahan.ID_WITEL,10):0,
     WITEL:lahan.WITEL?lahan.WITEL:"",
+    DISTANCE:lahan.DISTANCE,
     NAMA_KLASIFIKASI: lahan.NAMA_KLASIFIKASI_ALIAS?lahan.NAMA_KLASIFIKASI_ALIAS:"",
     NAMA_STATUS_KEPEMILIKAN: lahan.NAMA_STATUS_KEPEMILIKAN?lahan.NAMA_STATUS_KEPEMILIKAN:"",
     PATH_LAHAN_IMAGE: lahan.PATH_LAHAN_IMAGE? 'http://mrra.telkom.co.id/gis/assets'+lahan.PATH_LAHAN_IMAGE:"",
