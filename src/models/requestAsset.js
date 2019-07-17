@@ -1,6 +1,7 @@
 const database = require('../services/database.js');
-const fs = require('fs');
+//const fs = require('fs');
 const oracledb = require('oracledb');
+const createError = require('http-errors')
 
 async function getList(req){    
   const listLahan= await getListLahan(req.currentUser.nik) 
@@ -41,13 +42,162 @@ async function getListGedung(nik){
   return result.rows;
 }
 
-async function getLahan(id){    
-
+async function getImageRequestLahan(id){
+  const images = await database.simpleExecute(`SELECT ID, FILE_PATH from LA_REQUEST_ATTACHMENT WHERE IDREQUEST= :id AND TYPE ='LAHAN'`, {id:id})
+  return images.rows.length > 0 ? images.rows.map(img=>{
+    return {
+      ID: img.ID,
+      PATH : 'http://10.60.164.5/myassist/'+img.FILE_PATH
+    }
+  }) : [];
 }
 
-async function getGedung(id){    
+async function getGedungRequestLahan(id){
+  const gedung = await database.simpleExecute(`SELECT * from LA_REQUEST_GEDUNG WHERE ID_REQUEST_LAHAN= :id`, {id:id})
+  const gdPromises = gedung.rows.map(async gd=>{
+    const imgGedung =  await database.simpleExecute(`SELECT ID, FILE_PATH from LA_REQUEST_ATTACHMENT WHERE IDREQUEST= :id AND TYPE ='GEDUNG' AND ROWNUM = 1`, {id:gd.ID})
 
+    return {
+      ID: gd.ID,
+      NAMA: gd.NAMA,
+      ALAMAT: gd.ALAMAT||"",
+      PATH : imgGedung.rows.length > 0 ? 'http://10.60.164.5/myassist/'+imgGedung.rows[0].FILE_PATH:""
+    }
+  });
+  const resGedung = await Promise.all(gdPromises)
+  return resGedung.length > 0 ? resGedung : [];
 }
+
+//cek apakah punya request yang pending jika tidak get lahan
+async function getLahan(context){    
+
+  const result ={}
+  const reqLahan = await database.simpleExecute(`SELECT * from LA_REQUEST_LAHAN WHERE IDAREAL= :id AND REQUEST_BY = :request_by AND STATUS_REQUEST IN ('PENDING','REVISI')`, {id:context.id, request_by:context.nik})
+  const dataLahan = await database.simpleExecute(`SELECT IDAREAL, NAMA_LAHAN, ALAMAT, PATH_LAHAN_IMAGE,COOR_X, COOR_Y, ID_TREG from GIS_LAHAN_MASTER WHERE IDAREAL= :id `, {id:context.id})
+
+  if(reqLahan.rows.length > 0){
+    const images = await getImageRequestLahan(reqLahan.rows[0].ID);
+
+    result.lahan = reqLahan.rows.reduce((acc, lahan)=>{
+      return {
+        ID_LAHAN : lahan.IDAREAL,
+        ID_REQUEST : lahan.ID,
+        NAMA : lahan.NAMA_LAHAN,
+        ALAMAT : lahan.ALAMAT,
+        COOR_X : lahan.COOR_X,
+        COOR_Y : lahan.COOR_Y,
+        REGIONAL : lahan.TELKOM_REGIONAL,
+        NOTES : lahan.NOTES||"",
+        STATUS : lahan.STATUS_REQUEST,
+        IMAGE :  images.length > 0 ? images[0].PATH:""
+      }
+    },0)
+    result.images =  images
+
+    result.gedung = await getGedungRequestLahan(reqLahan.rows[0].ID);
+
+    return result;
+  }
+  
+  if(dataLahan.rows.length >0){
+    result.lahan = dataLahan.rows.reduce((acc, lahan)=>{
+      return {
+        ID_LAHAN : lahan.IDAREAL,
+        ID_REQUEST : "",
+        NAMA : lahan.NAMA_LAHAN,
+        ALAMAT : lahan.ALAMAT,
+        COOR_X : lahan.COOR_X,
+        COOR_Y : lahan.COOR_Y,
+        REGIONAL : lahan.ID_TREG,
+        NOTES : "",
+        STATUS : "",
+        IMAGE :  lahan.PATH_LAHAN_IMAGE? 'http://mrra.telkom.co.id/gis/assets'+lahan.PATH_LAHAN_IMAGE:""
+      }
+    },0)
+    result.images = []
+    result.gedung = []
+    return result
+  }
+  throw createError(404, 'Lahan tidak ditemukan!')
+}
+
+async function getRequestLahan(context){    
+  const result ={}
+  const reqLahan = await database.simpleExecute(`SELECT * from LA_REQUEST_LAHAN WHERE ID= :id AND REQUEST_BY = :request_by AND STATUS_REQUEST IN ('PENDING','REVISI')`, {id:context.id, request_by:context.nik})
+
+  if(reqLahan.rows.length > 0){
+      const images = await database.simpleExecute(`SELECT ID, FILE_PATH from LA_REQUEST_ATTACHMENT WHERE IDREQUEST= :id AND TYPE ='LAHAN'`, {id:reqLahan.rows[0].ID})
+      const gedung = await database.simpleExecute(`SELECT * from LA_REQUEST_GEDUNG WHERE ID_REQUEST_LAHAN= :id`, {id:reqLahan.rows[0].ID})
+      result.lahan = reqLahan.rows.reduce((acc, lahan)=>{
+        return {
+          ID_LAHAN : lahan.IDAREAL,
+          ID_REQUEST : lahan.ID,
+          NAMA : lahan.NAMA_LAHAN,
+          ALAMAT : lahan.ALAMAT,
+          COOR_X : lahan.COOR_X,
+          COOR_Y : lahan.COOR_Y,
+          REGIONAL : lahan.TELKOM_REGIONAL,
+          NOTES : lahan.NOTES||"",
+          STATUS : lahan.STATUS_REQUEST,
+          IMAGE :  images.rows.length > 0 ? 'http://10.60.164.5/myassist/'+images.rows[0].FILE_PATH:""
+        }
+      },0)
+      result.images =  images.rows.length > 0 ? images.rows.map(img=>{
+        return {
+          ID: img.ID,
+          PATH : 'http://10.60.164.5/myassist/'+img.FILE_PATH
+        }
+      }) : [];
+
+      const gdPromises = gedung.rows.map(async gd=>{
+        const imgGedung =  await database.simpleExecute(`SELECT ID, FILE_PATH from LA_REQUEST_ATTACHMENT WHERE IDREQUEST= :id AND TYPE ='GEDUNG' AND ROWNUM = 1`, {id:gd.ID})
+
+        return {
+          ID: gd.ID,
+          NAMA: gd.NAMA,
+          ALAMAT: gd.ALAMAT||"",
+          PATH : imgGedung.rows.length > 0 ? 'http://10.60.164.5/myassist/'+imgGedung.rows[0].FILE_PATH:""
+        }
+      });
+      const resGedung = await Promise.all(gdPromises)
+      result.gedung = resGedung.length > 0?resGedung:[];
+
+      return result;
+  }
+
+  throw createError(404, 'Request Lahan tidak ditemukan!')
+} 
+
+async function getRequestGedung(context){
+  const result ={}
+  const reqGedung = await database.simpleExecute(`SELECT * from LA_REQUEST_GEDUNG WHERE ID= :id AND REQUEST_BY = :request_by`, {id:context.id, request_by:context.nik})
+
+  if(reqGedung.rows.length > 0){
+      const images = await database.simpleExecute(`SELECT ID, FILE_PATH from LA_REQUEST_ATTACHMENT WHERE IDREQUEST= :id AND TYPE ='GEDUNG'`, {id:reqGedung.rows[0].ID})
+      result.gedung = reqGedung.rows.reduce((acc, gedung)=>{
+        return {
+          ID_LAHAN : gedung.IDAREAL||"",
+          ID_REQUEST_LAHAN : gedung.ID_REQUEST_LAHAN||"",
+          ID_REQUEST : gedung.ID,
+          NAMA : gedung.NAMA,
+          ALAMAT : gedung.ALAMAT||"",
+          NOTES : gedung.NOTES||"",
+          STATUS : gedung.STATUS_REQUEST,
+          IMAGE :  images.rows.length > 0 ? 'http://10.60.164.5/myassist/'+images.rows[0].FILE_PATH:""
+        }
+      },0)
+      result.images =  images.rows.length > 0 ? images.rows.map(img=>{
+        return {
+          ID: img.ID,
+          PATH : 'http://10.60.164.5/myassist/'+img.FILE_PATH
+        }
+      }) : [];
+
+      return result;
+  }
+
+  throw createError(404, 'Request Gedung tidak ditemukan!')
+}  
 
 /**
  * 
@@ -81,7 +231,7 @@ async function storeLahan(data){
         result = await storeExistRequestLahan(dataLahan)
         dataLahan.id = result.outBinds.id[0];
       }else{
-        throw new Error("Can't add request!");
+        throw createError(406, 'Gagal menyimpan!')
       }
     }   
   }
@@ -138,7 +288,7 @@ async function storeGedung(req){
     result = await storeRequestGedung(data, reqLahan.rows[0])
     data.id = result.outBinds.id[0];
   }else{
-    throw new Error("Can't add request!");
+    throw createError(406, 'Gagal menyimpan!')
   }
 
   return data;
@@ -155,7 +305,7 @@ async function updateGedung(req, id){
       return data;
     }
   }
-  throw new Error('Update gedung failed!')
+  throw createError(406, 'Gagal memperbarui!')
 }
 
 async function updateRequestGedung(data, dataLahan, id) {
@@ -234,7 +384,8 @@ async function storeExistRequestLahan(dataLahan){
 
 module.exports={
   getList,
-  getGedung,
+  getRequestGedung,
+  getRequestLahan,
   getLahan,
   storeLahan,
   storeGedung,

@@ -1,62 +1,61 @@
 const reqAsset = require('../models/requestAsset.js');
 const { check, validationResult } = require('express-validator')
-const multer = require('multer');
+// const multer = require('multer');
 
-const storage = multer.diskStorage({
-  destination: function(req, file, cb) {
-    cb(null, './public/images/');
-  },
-  filename: function(req, file, cb) {
-    cb(null, new Date().toISOString() + file.originalname);
-  }
-});
+// const storage = multer.diskStorage({
+//   destination: function(req, file, cb) {
+//     cb(null, './public/images/');
+//   },
+//   filename: function(req, file, cb) {
+//     cb(null, new Date().toISOString() + file.originalname);
+//   }
+// });
 
-const fileFilter = (req, file, cb) => {
-  if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
-    return cb(new Error('Only image files are allowed!'));
-  }
+// const fileFilter = (req, file, cb) => {
+//   if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
+//     return cb(new Error('Only image files are allowed!'));
+//   }
 
-  cb(null, true)
-};
+//   cb(null, true)
+// };
 
-const upload = multer({
-  storage: storage,
-  limits: {
-    fileSize: 1024 * 1024 * 5
-  },
-  fileFilter: fileFilter
-}).single('file');
+// const upload = multer({
+//   storage: storage,
+//   limits: {
+//     fileSize: 1024 * 1024 * 5
+//   },
+//   fileFilter: fileFilter
+// }).single('file');
 
-async function uploadImage(req, res, next) {
-  try {
-      upload(req, res, function (err) {
-        if (err instanceof multer.MulterError) {
-          res.status(500).json({
-            status:500,
-            message:err.message
-          });
-          return;
-        } else if (err) {
-          res.status(500).json({
-            status:500,
-            message:err.message
-          });
-          return;
-        }
-        res.status(200).json({
-          status:200,
-          message:'Sukses upload image'
-        });
-        return;
-      })
-  } catch (e) {
-    res.status(500).json({
-      status:500,
-      message:e.message
-    });
-  }
-}
-
+// async function uploadImage(req, res, next) {
+//   try {
+//       upload(req, res, function (err) {
+//         if (err instanceof multer.MulterError) {
+//           res.status(500).json({
+//             status:500,
+//             message:err.message
+//           });
+//           return;
+//         } else if (err) {
+//           res.status(500).json({
+//             status:500,
+//             message:err.message
+//           });
+//           return;
+//         }
+//         res.status(200).json({
+//           status:200,
+//           message:'Sukses upload image'
+//         });
+//         return;
+//       })
+//   } catch (e) {
+//     res.status(500).json({
+//       status:500,
+//       message:e.message
+//     });
+//   }
+// }
 
 function validate(method){
   return async (req, res, next) => {
@@ -110,10 +109,17 @@ async function listAssets(req, res, next) {
   }
 }
 
+function setContext(req){
+  return {
+    id: parseInt(req.params.id, 10),
+    nik: req.currentUser.nik
+  }
+}
+
 async function getRequestAssetGedung(req, res, next) {
   try {
-    const id = parseInt(req.params.id, 10);
-    const rows = await reqAsset.getGedung(req, id);
+    const context = setContext(req)
+    const rows = await reqAsset.getRequestGedung(context);
     res.status(200).json({
       status:200,
 			data:rows,
@@ -128,8 +134,8 @@ async function getRequestAssetGedung(req, res, next) {
 
 async function getRequestAssetLahan(req, res, next) {
   try {
-    const id = parseInt(req.params.id, 10);
-    const rows = await reqAsset.getLahan(req, id);
+    const context = setContext(req)
+    const rows = await reqAsset.getRequestLahan(context);
     res.status(200).json({
       status:200,
 			data:rows,
@@ -142,6 +148,21 @@ async function getRequestAssetLahan(req, res, next) {
   }
 }
 
+async function getAssetLahan(req, res, next) {
+  try {
+    const context = setContext(req)
+    const rows = await reqAsset.getLahan(context);
+    res.status(200).json({
+      status:200,
+			data:rows,
+    });
+  } catch (err) {
+    res.status(err.status || 500).json({
+      status:err.status || 500,
+      message:err.message
+    });
+  }
+}
 
 function getLahanFromRec(req) {
   const lahan = {
@@ -258,5 +279,5 @@ module.exports = {
   validate,
   updateRequestAssetLahan,
   updateRequestAssetGedung,
-  uploadImage
+  getAssetLahan
 }

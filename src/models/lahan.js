@@ -2,22 +2,6 @@ const database = require('../services/database.js');
 const transform = require('../transformers/lahan.js');
 const url = require('url');
 
-
-/**
- * 
- * @param {TODO} req 
- * 
- * API
- * Summary status tanah => HGB, HGB Jatuh Tempo, Tidak Bersertifikat
- * Asset Mapping (Q1-Q4) => isinya per regional sampe witel
- * List Request lahan
- * List Request Gedung
- * Input Req Lahan
- * Input Req Gedung
- * Edit Req Lahan
- * Edit Req Gedung
- */
-//f.NAMA as STATUS_KEP
 async function getAll(req)
 {
     const tahunJatuhTempo= getJatuhTempo()

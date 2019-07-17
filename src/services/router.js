@@ -80,12 +80,14 @@ router.route('/status-tanah/aset')
 
 router.route('/request-assets')
       .get(requestAsset.listAssets);
-router.route('/request-assets/:id/gedung')
+router.route('/request-gedung/:id')
       .get(requestAsset.getRequestAssetGedung);
-router.route('/request-assets/:id/lahan')
+router.route('/lahan/:id/edit')
+      .get(requestAsset.getAssetLahan);
+router.route('/request-lahan/:id')
       .get(requestAsset.getRequestAssetLahan);
-router.route('/upload/image')
-      .post(requestAsset.uploadImage);
+// router.route('/upload/image')
+//       .post(requestAsset.uploadImage);
 router.post(
       '/request-lahan', 
       requestAsset.validate('createLahan'), 
