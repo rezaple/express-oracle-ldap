@@ -1,7 +1,8 @@
 const database = require('../services/database.js');
-//const fs = require('fs');
+const fs = require('fs');
 const oracledb = require('oracledb');
 const createError = require('http-errors')
+var isBase64 = require('is-base64');
 
 async function getList(req){    
   const listLahan= await getListLahan(req.currentUser.nik) 
@@ -70,7 +71,6 @@ async function getGedungRequestLahan(id){
 
 //cek apakah punya request yang pending jika tidak get lahan
 async function getLahan(context){    
-
   const result ={}
   const reqLahan = await database.simpleExecute(`SELECT * from LA_REQUEST_LAHAN WHERE IDAREAL= :id AND REQUEST_BY = :request_by AND STATUS_REQUEST IN ('PENDING','REVISI')`, {id:context.id, request_by:context.nik})
   const dataLahan = await database.simpleExecute(`SELECT IDAREAL, NAMA_LAHAN, ALAMAT, PATH_LAHAN_IMAGE,COOR_X, COOR_Y, ID_TREG from GIS_LAHAN_MASTER WHERE IDAREAL= :id `, {id:context.id})
@@ -199,16 +199,6 @@ async function getRequestGedung(context){
   throw createError(404, 'Request Gedung tidak ditemukan!')
 }  
 
-/**
- * 
- * @param {*} req 
- * @param {*} id 
- * store lahan ada dua
- * satu insert lahan baru request-assets/lahan
- * satu update lahan lama request-assest/:id/lahan
- * kalau lahan baru gak butuh idareal yang lama
- * kalau yang update butuh buat patokan
- */
 async function storeLahan(data){    
 
   let result
@@ -382,6 +372,70 @@ async function storeExistRequestLahan(dataLahan){
     return result
 }
 
+async function upload(context){
+  try {
+    const reqLahan =  await database.simpleExecute(`SELECT * from LA_REQUEST_LAHAN WHERE ID= :id AND REQUEST_BY = :request_by AND STATUS_REQUEST IN ('PENDING','REVISI')`, {id:context.id, request_by:context.nik})
+    if(reqLahan.rows.length > 0){
+      if(context.images instanceof Array){
+        const imgPromises = context.images.map(async(image)=>{
+          if(isBase64(image, {mime: true})){
+            const resImage = await writeImageToDisk(context, image)
+            return resImage
+          }
+        })
+
+        const images = await Promise.all(imgPromises)
+        return images
+      }
+      
+      if(context.images !== undefined){
+        if(isBase64(context.images, {mime: true})){
+          const resImage = await writeImageToDisk(context, context.images)
+          return [resImage]
+        }
+        throw createError(400, 'Data yang dikirim bukan dalam format base64!')
+      }
+      throw createError(400, 'Gambar dibutuhkan!')      
+    }
+    throw createError(404, 'Request Lahan tidak ditemukan!') 
+  } catch (e) {
+      throw createError(500,e.message);
+  }
+}
+async function writeImageToDisk({id, type, created_date}, image){
+  if(isBase64(image, {mime: true})){
+    const nama = +Date.now()+'.png'
+    const path = './public/images/'+nama
+    const imgdata = image;
+    const base64Data = imgdata.replace(/^data:([A-Za-z-+/]+);base64,/, '');
+    fs.writeFileSync(path, base64Data,  {encoding: 'base64'});
+    const resImage = await storeImage({id, type, created_date, nama, path})
+    return resImage
+  }
+}
+
+async  function storeImage(context){
+  const id = {
+    dir: oracledb.BIND_OUT,
+    type: oracledb.NUMBER
+  }
+
+  const result = await database.simpleExecute(`INSERT INTO VEAT.LA_REQUEST_ATTACHMENT
+  (IDREQUEST, FILE_NAME, TYPE, FILE_PATH, CREATED_DATE)
+  VALUES(:idreq,:nama, :type, :path, TO_DATE(:created_date, 'yyyy/mm/dd hh24:mi:ss')) returning id into :id`, {
+    id:id,
+    idreq:context.id,
+    nama:context.nama,
+    type:context.type,
+    path:context.path.slice(1),
+    created_date: context.created_date
+  })
+  return {
+      id: result.outBinds.id[0],
+      path: context.path.slice(1)
+  }
+}
+
 module.exports={
   getList,
   getRequestGedung,
@@ -390,5 +444,6 @@ module.exports={
   storeLahan,
   storeGedung,
   updateLahan,
-  updateGedung
+  updateGedung,
+  upload
 };

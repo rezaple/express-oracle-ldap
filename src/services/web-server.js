@@ -5,7 +5,6 @@ const morgan = require('morgan');
 const path = require("path");
 const webServerConfig = require('../config/web-server.js');
 const router = require('./router.js');
-// const expressValidator = require('express-validator')
 
 let httpServer;
 
@@ -15,9 +14,9 @@ function initialize() {
 
     app.use(morgan('combined'));
     app.use(express.static('public'));
-    app.use(bodyParser.urlencoded({ extended: false }));
-    app.use(bodyParser.json());
-    // app.use(expressValidator())
+    app.use(bodyParser.json({limit: '50mb'}));
+    app.use(bodyParser.urlencoded({limit: '50mb', extended: false}));
+
     app.use((req, res, next) => {
       res.header("Access-Control-Allow-Origin", "*");
       res.header(

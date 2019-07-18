@@ -86,8 +86,10 @@ router.route('/lahan/:id/edit')
       .get(requestAsset.getAssetLahan);
 router.route('/request-lahan/:id')
       .get(requestAsset.getRequestAssetLahan);
-// router.route('/upload/image')
-//       .post(requestAsset.uploadImage);
+router.route('/request-lahan/:id/upload')
+      .post(requestAsset.uploadImageLahan);
+router.route('/request-gedung/:id/upload')
+      .post(requestAsset.uploadImageGedung);
 router.post(
       '/request-lahan', 
       requestAsset.validate('createLahan'), 

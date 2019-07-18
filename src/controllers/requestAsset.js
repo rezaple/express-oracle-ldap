@@ -1,61 +1,11 @@
 const reqAsset = require('../models/requestAsset.js');
 const { check, validationResult } = require('express-validator')
-// const multer = require('multer');
 
-// const storage = multer.diskStorage({
-//   destination: function(req, file, cb) {
-//     cb(null, './public/images/');
-//   },
-//   filename: function(req, file, cb) {
-//     cb(null, new Date().toISOString() + file.originalname);
-//   }
-// });
-
-// const fileFilter = (req, file, cb) => {
-//   if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
-//     return cb(new Error('Only image files are allowed!'));
-//   }
-
-//   cb(null, true)
-// };
-
-// const upload = multer({
-//   storage: storage,
-//   limits: {
-//     fileSize: 1024 * 1024 * 5
-//   },
-//   fileFilter: fileFilter
-// }).single('file');
-
-// async function uploadImage(req, res, next) {
-//   try {
-//       upload(req, res, function (err) {
-//         if (err instanceof multer.MulterError) {
-//           res.status(500).json({
-//             status:500,
-//             message:err.message
-//           });
-//           return;
-//         } else if (err) {
-//           res.status(500).json({
-//             status:500,
-//             message:err.message
-//           });
-//           return;
-//         }
-//         res.status(200).json({
-//           status:200,
-//           message:'Sukses upload image'
-//         });
-//         return;
-//       })
-//   } catch (e) {
-//     res.status(500).json({
-//       status:500,
-//       message:e.message
-//     });
-//   }
-// }
+function getDate(){
+  var date = new Date()
+  date.setHours(date.getHours() + 7);
+  return date.toISOString().replace(/T/, ' ').replace(/\..+/, '');
+}
 
 function validate(method){
   return async (req, res, next) => {
@@ -175,7 +125,7 @@ function getLahanFromRec(req) {
     status:'PENDING',
     request_by: req.currentUser.nik,
     id_lahan: parseInt(req.body.id_lahan),
-    request_date:new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
+    request_date:getDate()
   };
 
   return lahan;
@@ -207,7 +157,7 @@ function getGedungFromRec(req) {
     id_lahan: parseInt(req.body.id_lahan),
     id_request_lahan: parseInt(req.body.id_request_lahan),
     id_gedung: parseInt(req.body.id_gedung)||null,
-    request_date:new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
+    request_date:getDate()
   };
 
   return gedung;
@@ -269,6 +219,50 @@ async function updateRequestAssetGedung(req, res, next) {
   }
 }
 
+async function uploadImageLahan(req, res, next){
+  try {
+    const context = {
+      id: parseInt(req.params.id, 10),
+      images:req.body.images,
+      nik: req.currentUser.nik,
+      type: 'LAHAN',
+      created_date:getDate()
+    };
+    const rows = await reqAsset.upload(context);
+    res.status(200).json({
+      status:200,
+			data:rows,
+    });
+  } catch (err) {
+    res.status(err.status || 500).json({
+      status:err.status||500,
+      message:err.message
+    });
+  }
+}
+
+async function uploadImageGedung(req, res, next){
+  try {
+    const context = {
+      id: parseInt(req.params.id, 10),
+      images:req.body.images,
+      nik: req.currentUser.nik,
+      type: 'GEDUNG',
+      created_date:getDate()
+    };
+
+    const rows = await reqAsset.upload(context);
+    res.status(200).json({
+      status:200,
+			data:rows,
+    });
+  } catch (err) {
+    res.status(500).json({
+      status:500,
+      message:err.message
+    });
+  }
+}
 
 module.exports = {
   listAssets,
@@ -279,5 +273,7 @@ module.exports = {
   validate,
   updateRequestAssetLahan,
   updateRequestAssetGedung,
-  getAssetLahan
+  getAssetLahan,
+  uploadImageLahan,
+  uploadImageGedung
 }
