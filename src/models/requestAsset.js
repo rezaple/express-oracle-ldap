@@ -313,7 +313,7 @@ async function updateRequestGedung(data, dataLahan, id) {
   });
 
   if (result.rowsAffected && result.rowsAffected === 1) {
-    dataLahan.id=id
+    dataLahan.nama=data.nama
     return dataLahan;
   } else {
     return null;
