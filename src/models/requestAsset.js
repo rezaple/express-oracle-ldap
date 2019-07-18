@@ -291,8 +291,8 @@ async function updateGedung(req, id){
   if(reqGedung.rows.length > 0){
     const reqLahan = await database.simpleExecute(`SELECT ID,ALAMAT, COOR_X, COOR_Y from LA_REQUEST_LAHAN WHERE ID= :id AND REQUEST_BY = :request_by`, {id:reqGedung.rows[0].ID_REQUEST_LAHAN, request_by:data.request_by})
     if(reqLahan.rows.length > 0){
-      await updateRequestGedung(data,reqLahan.rows[0],id)
-      return data;
+      const update = await updateRequestGedung(data,reqLahan.rows[0],id)
+      return update;
     }
   }
   throw createError(406, 'Gagal memperbarui!')
@@ -313,6 +313,7 @@ async function updateRequestGedung(data, dataLahan, id) {
   });
 
   if (result.rowsAffected && result.rowsAffected === 1) {
+    dataLahan.id=id
     return dataLahan;
   } else {
     return null;
