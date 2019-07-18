@@ -427,12 +427,12 @@ async  function storeImage(context){
     idreq:context.id,
     nama:context.nama,
     type:context.type,
-    path:context.path.slice(1),
+    path:context.path.slice(9),
     created_date: context.created_date
   })
   return {
       id: result.outBinds.id[0],
-      path: context.path.slice(1)
+      path: 'http://10.60.164.5/myassist/'+context.path.slice(9)
   }
 }
 
