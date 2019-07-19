@@ -3,11 +3,124 @@ const fs = require('fs');
 const oracledb = require('oracledb');
 const createError = require('http-errors')
 var isBase64 = require('is-base64');
+const url = require('url');
+const transform = require('../transformers/requestAsset.js');
+
+function current_url(req){
+  const requrl = url.format({
+    protocol: req.protocol,
+    host: req.get('host'),
+    pathname: req.originalUrl.split("?").shift(),
+  });
+  return requrl
+}
 
 async function getList(req){    
   const listLahan= await getListLahan(req.currentUser.nik) 
   const listGedung= await getListGedung(req.currentUser.nik) 
   return {lahan:listLahan, gedung:listGedung}
+}
+
+async function listRequestGedung(req)
+{
+    const res ={}
+    const params = req.query
+    let per_page=10;
+    let page=1;
+    if(params.per_page !== undefined){
+        per_page=parseInt(params.per_page,10);
+    }
+
+    if(params.page!== undefined){
+        page=parseInt(params.page,10);
+    }
+
+    const sql=`
+    SELECT
+      a.ID, a.NAMA, a.ALAMAT, a.STATUS_REQUEST, a.REQUEST_DATE, s2.PATH_FILE,
+      ROW_NUMBER() OVER (ORDER BY a.ID) RN
+    FROM
+      LA_REQUEST_GEDUNG a
+    LEFT OUTER JOIN (SELECT IDREQUEST, MAX(FILE_PATH) PATH_FILE 
+			FROM LA_REQUEST_ATTACHMENT WHERE "TYPE"='GEDUNG' GROUP BY IDREQUEST ) s2
+     ON a.ID = s2.IDREQUEST WHERE a.REQUEST_BY=${req.currentUser.nik} ORDER BY a.REQUEST_DATE DESC`;
+
+    const totalQuery = await database.simpleExecute(`SELECT count(*) as total_count FROM(${sql})`, {});
+    const total= totalQuery.rows[0].TOTAL_COUNT;
+    const totalPages=Math.ceil(total/per_page);
+    const awal=(page===1)?1:((page-1)*per_page+1);
+    const akhir=(page===1)?per_page:(page*per_page);
+
+    const result = await database.simpleExecute(`SELECT * FROM(${sql})
+    WHERE RN >= ${awal} AND RN <= ${akhir}`, {});
+    const transformedListLahan= await result.rows.map(data => {
+      return transform.transformList(data)
+    });
+    res.data = transformedListLahan
+    const prevPage=(page==1)?"":current_url(req)+"?page="+(page-1)+`&per_page=${per_page}`;
+    const nextPage=(page==totalPages)?"":current_url(req)+`?page=${(page+1)}&per_page=${per_page}`;
+
+    res.paginator = {
+        'total_count': parseInt(total),
+        'total_pages':totalPages,
+        'first_page': current_url(req)+`?page=1&per_page=${per_page}`,
+        'prev_page':prevPage,
+        'next_page':nextPage,
+        'last_page':current_url(req)+`?page=${totalPages}&per_page=${per_page}`,
+        'limit':per_page
+    }
+    return res;
+}
+
+async function listRequestLahan(req)
+{
+    const res ={}
+    const params = req.query
+    let per_page=10;
+    let page=1;
+    if(params.per_page !== undefined){
+        per_page=parseInt(params.per_page,10);
+    }
+
+    if(params.page!== undefined){
+        page=parseInt(params.page,10);
+    }
+
+    const sql=`
+    SELECT
+      a.ID, a.IDAREAL, a.NAMA_LAHAN as NAMA, a.ALAMAT, a.STATUS_REQUEST, a.REQUEST_DATE, s2.PATH_FILE,
+      ROW_NUMBER() OVER (ORDER BY a.ID) RN
+    FROM
+      LA_REQUEST_LAHAN a
+    LEFT OUTER JOIN (SELECT IDREQUEST, MAX(FILE_PATH) PATH_FILE 
+			FROM LA_REQUEST_ATTACHMENT WHERE "TYPE"='LAHAN' GROUP BY IDREQUEST ) s2
+     ON a.ID = s2.IDREQUEST WHERE a.REQUEST_BY=${req.currentUser.nik} ORDER BY a.REQUEST_DATE DESC`;
+
+    const totalQuery = await database.simpleExecute(`SELECT count(*) as total_count FROM(${sql})`, {});
+    const total= totalQuery.rows[0].TOTAL_COUNT;
+    const totalPages=Math.ceil(total/per_page);
+    const awal=(page===1)?1:((page-1)*per_page+1);
+    const akhir=(page===1)?per_page:(page*per_page);
+
+    const result = await database.simpleExecute(`SELECT * FROM(${sql})
+    WHERE RN >= ${awal} AND RN <= ${akhir}`, {});
+    const transformedListLahan= await result.rows.map(data => {
+      return transform.transformList(data)
+    });
+    res.data = transformedListLahan
+    const prevPage=(page==1)?"":current_url(req)+"?page="+(page-1)+`&per_page=${per_page}`;
+    const nextPage=(page==totalPages)?"":current_url(req)+`?page=${(page+1)}&per_page=${per_page}`;
+
+    res.paginator = {
+        'total_count': parseInt(total),
+        'total_pages':totalPages,
+        'first_page': current_url(req)+`?page=1&per_page=${per_page}`,
+        'prev_page':prevPage,
+        'next_page':nextPage,
+        'last_page':current_url(req)+`?page=${totalPages}&per_page=${per_page}`,
+        'limit':per_page
+    }
+    return res;
 }
 
 /**
@@ -27,7 +140,10 @@ async function getListLahan(nik){
 
   const result = await database.simpleExecute(query, {});
 
-  return result.rows;
+  const transformedListLahan= await result.rows.map(data => {
+    return transform.transformList(data)
+  });
+  return transformedListLahan
 }
 
 async function getListGedung(nik){
@@ -40,11 +156,14 @@ async function getListGedung(nik){
 
   const result = await database.simpleExecute(query, {});
 
-  return result.rows;
+  const transformedListGedung= await result.rows.map(data => {
+    return transform.transformList(data)
+  });
+  return transformedListGedung
 }
 
-async function getImageRequestLahan(id){
-  const images = await database.simpleExecute(`SELECT ID, FILE_PATH from LA_REQUEST_ATTACHMENT WHERE IDREQUEST= :id AND TYPE ='LAHAN'`, {id:id})
+async function getImageRequest(id, type){
+  const images = await database.simpleExecute(`SELECT ID, FILE_PATH from LA_REQUEST_ATTACHMENT WHERE IDREQUEST= :id AND "TYPE" = :type`, {id:id, type:type})
   return images.rows.length > 0 ? images.rows.map(img=>{
     return {
       ID: img.ID,
@@ -76,7 +195,7 @@ async function getLahan(context){
   const dataLahan = await database.simpleExecute(`SELECT IDAREAL, NAMA_LAHAN, ALAMAT, PATH_LAHAN_IMAGE,COOR_X, COOR_Y, ID_TREG from GIS_LAHAN_MASTER WHERE IDAREAL= :id `, {id:context.id})
 
   if(reqLahan.rows.length > 0){
-    const images = await getImageRequestLahan(reqLahan.rows[0].ID);
+    const images = await getImageRequest(reqLahan.rows[0].ID, 'LAHAN');
 
     result.lahan = reqLahan.rows.reduce((acc, lahan)=>{
       return {
@@ -119,6 +238,52 @@ async function getLahan(context){
     return result
   }
   throw createError(404, 'Lahan tidak ditemukan!')
+}
+
+async function getGedung(context){    
+  const result ={}
+  const reqGedung = await database.simpleExecute(`SELECT * from LA_REQUEST_GEDUNG WHERE IDGEDUNG= :id AND REQUEST_BY = :request_by AND STATUS_REQUEST IN ('PENDING','REVISI')`, {id:context.id, request_by:context.nik})
+  const dataGedung = await database.simpleExecute(`SELECT IDGEDUNG, NAMA_GEDUNG, ALAMAT, PATH_GEDUNG_IMAGE,COOR_X, COOR_Y from GIS_BANGUNAN_MASTER WHERE IDGEDUNG= :id `, {id:context.id})
+
+  if(reqGedung.rows.length > 0){
+    const images = await getImageRequest(reqGedung.rows[0].ID, 'GEDUNG');
+
+    result.gedung = reqGedung.rows.reduce((acc, data)=>{
+      return {
+        ID_LAHAN : data.IDGEDUNG,
+        ID_REQUEST : data.ID,
+        NAMA : data.NAMA,
+        ALAMAT : data.ALAMAT,
+        COOR_X : data.COOR_X,
+        COOR_Y : data.COOR_Y,
+        NOTES : data.NOTES||"",
+        STATUS : data.STATUS_REQUEST,
+        IMAGE :  images.length > 0 ? images[0].PATH:""
+      }
+    },0)
+    result.images =  images
+
+    return result;
+  }
+  
+  if(dataGedung.rows.length >0){
+    result.gedung = dataGedung.rows.reduce((acc, data)=>{
+      return {
+        ID_GEDUNG : data.IDGEDUNG,
+        ID_REQUEST : "",
+        NAMA : data.NAMA_GEDUNG,
+        ALAMAT : data.ALAMAT,
+        COOR_X : data.COOR_X,
+        COOR_Y : data.COOR_Y,
+        NOTES : "",
+        STATUS : "",
+        IMAGE :  data.PATH_LAHAN_IMAGE? 'http://mrra.telkom.co.id/gis/assets'+data.PATH_LAHAN_IMAGE:""
+      }
+    },0)
+    result.images = []
+    return result
+  }
+  throw createError(404, 'Gedung tidak ditemukan!')
 }
 
 async function getRequestLahan(context){    
@@ -437,14 +602,47 @@ async  function storeImage(context){
   }
 }
 
+async function deleteImage(context){
+  const imageLahan = await database.simpleExecute(`SELECT att.ID from LA_REQUEST_ATTACHMENT att JOIN LA_REQUEST_LAHAN lahan ON att.IDREQUEST= lahan.ID WHERE att.ID= :id AND lahan.REQUEST_BY= :request_by`,{id:context.id, request_by: context.nik})
+
+  const imageGedung = await database.simpleExecute(`SELECT att.ID from LA_REQUEST_ATTACHMENT att JOIN LA_REQUEST_GEDUNG lahan ON att.IDREQUEST= lahan.ID WHERE att.ID= :id AND lahan.REQUEST_BY= :request_by`,{id:context.id, request_by: context.nik})
+
+  if(imageLahan.rows.length > 0 || imageGedung.rows.length > 0){
+    const deleteSql =
+    `begin
+    
+       delete from LA_REQUEST_ATTACHMENT
+       where ID = :id;
+
+       :rowcount := sql%rowcount;
+     end;`
+   
+     const binds = {
+       id: context.id,
+       rowcount: {
+         dir: oracledb.BIND_OUT,
+         type: oracledb.NUMBER
+       }
+     }
+     const result = await database.simpleExecute(deleteSql, binds);
+   
+     return result.outBinds.rowcount === 1;
+  }
+  return false;
+}
+
 module.exports={
   getList,
   getRequestGedung,
   getRequestLahan,
+  listRequestGedung,
+  listRequestLahan,
   getLahan,
+  getGedung,
   storeLahan,
   storeGedung,
   updateLahan,
   updateGedung,
-  upload
+  upload,
+  deleteImage
 };

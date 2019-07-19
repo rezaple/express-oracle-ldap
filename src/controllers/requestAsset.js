@@ -1,6 +1,7 @@
 const reqAsset = require('../models/requestAsset.js');
 const { check, validationResult } = require('express-validator')
 
+//pindah juga
 function getDate(){
   var date = new Date()
   date.setHours(date.getHours() + 7);
@@ -47,8 +48,8 @@ function getValidations(method){
 async function listAssets(req, res, next) {
   try {
     const rows = await reqAsset.getList(req);
-    res.status(201).json({
-      status:201,
+    res.status(200).json({
+      status:200,
 			data:rows,
     });
   } catch (err) {
@@ -59,6 +60,39 @@ async function listAssets(req, res, next) {
   }
 }
 
+async function listRequestLahan(req, res, next) {
+  try {
+    const rows = await reqAsset.listRequestLahan(req);
+    res.status(200).json({
+      status:200,
+			data:rows.data,
+			paginator:rows.paginator
+    });
+  } catch (err) {
+    res.status(500).json({
+      status:500,
+      message:err.message
+    });
+  }
+}
+
+async function listRequestGedung(req, res, next) {
+  try {
+    const rows = await reqAsset.listRequestGedung(req);
+    res.status(200).json({
+      status:200,
+      data:rows.data,
+			paginator:rows.paginator
+    });
+  } catch (err) {
+    res.status(500).json({
+      status:500,
+      message:err.message
+    });
+  }
+}
+
+//pindah juga
 function setContext(req){
   return {
     id: parseInt(req.params.id, 10),
@@ -114,6 +148,23 @@ async function getAssetLahan(req, res, next) {
   }
 }
 
+async function getAssetGedung(req, res, next) {
+  try {
+    const context = setContext(req)
+    const rows = await reqAsset.getGedung(context);
+    res.status(200).json({
+      status:200,
+			data:rows,
+    });
+  } catch (err) {
+    res.status(err.status || 500).json({
+      status:err.status || 500,
+      message:err.message
+    });
+  }
+}
+
+//harus dipindah
 function getLahanFromRec(req) {
   const lahan = {
     nama: req.body.nama,
@@ -149,6 +200,7 @@ async function storeRequestAssetLahan(req, res, next) {
   }
 }
 
+//harus dipindah
 function getGedungFromRec(req) {
   const gedung = {
     nama: req.body.nama,
@@ -264,6 +316,31 @@ async function uploadImageGedung(req, res, next){
   }
 }
 
+async function deleteImage(req, res, next){
+  try {
+    const context = {
+      id:parseInt(req.params.id, 10),
+      nik:req.currentUser.nik
+    }
+
+    const success = await reqAsset.deleteImage(context);
+
+    if (success) {
+      res.status(204).end();
+    } else {
+      res.status(404).json({
+        status:404,
+        message:'Gambar tidak ditemukan!'
+      });
+    }
+  } catch (err) {
+    res.status(500).json({
+      status:500,
+      message:err.message
+    });
+  }
+}
+
 module.exports = {
   listAssets,
   getRequestAssetGedung,
@@ -274,6 +351,10 @@ module.exports = {
   updateRequestAssetLahan,
   updateRequestAssetGedung,
   getAssetLahan,
+  getAssetGedung,
   uploadImageLahan,
-  uploadImageGedung
+  uploadImageGedung,
+  listRequestGedung,
+  listRequestLahan,
+  deleteImage
 }
