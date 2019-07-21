@@ -386,8 +386,10 @@ async function storeLahan(data){
         result = await storeExistRequestLahan(dataLahan)
         dataLahan.id = result.outBinds.id[0];
       }else{
-        throw createError(406, 'Gagal menyimpan!')
+        await updateRequestLahan(dataLahan,reqLahan.rows[0].ID)
       }
+    }else{
+      throw createError(406, 'Gagal menyimpan!')
     }   
   }
 
@@ -438,13 +440,28 @@ async function storeGedung(req){
     type: oracledb.NUMBER
   }
 
+  //jika edit dari gedunglgsg, kan get data master gedung atau request gedung
+  //jika pake id gedu 
+  if(data.id_gedung!==undefined || data.id_gedung ){
+    const reqGedung = await database.simpleExecute(`SELECT ID, ALAMAT, COOR_X, COOR_Y from LA_REQUEST_GEDUNG WHERE IDGEDUNG= :id AND REQUEST_BY = :request_by AND STATUS_REQUEST IN ('PENDING','REVISI')`, {id:data.id_gedung, request_by:data.request_by})
+
+    if(reqGedung.rows.length > 0){
+      const update = await updateRequestGedung(data,reqGedung.rows[0],reqGedung.rows[0].ID)
+      data.id=reqGedung.rows[0].ID
+    }else{
+      result = await storeNewRequestGedung(data);
+      data.id = result.outBinds.id[0];
+    }
+   
+ }else if(data.id_request_lahan!==undefined || data.id_request_lahan){
   const reqLahan = await database.simpleExecute(`SELECT ID, ALAMAT, COOR_X, COOR_Y from LA_REQUEST_LAHAN WHERE ID= :id AND REQUEST_BY = :request_by AND STATUS_REQUEST IN ('PENDING','REVISI')`, {id:data.id_request_lahan, request_by:data.request_by})
   if(reqLahan.rows.length > 0){
     result = await storeRequestGedung(data, reqLahan.rows[0])
     data.id = result.outBinds.id[0];
-  }else{
-    throw createError(406, 'Gagal menyimpan!')
   }
+ }else{
+  throw createError(406, 'Gagal menyimpan!')
+ }
 
   return data;
 }
@@ -498,6 +515,20 @@ async function storeNewRequestLahan(dataLahan){
       regional: dataLahan.regional,
       request_by: dataLahan.request_by,
       request_date: dataLahan.request_date
+    })
+  return result
+}
+
+async function storeNewRequestGedung(data){
+  const result = await database.simpleExecute(`INSERT INTO VEAT.LA_REQUEST_GEDUNG
+    (IDGEDUNG, NAMA, STATUS_REQUEST, REQUEST_BY, REQUEST_DATE)
+    VALUES(:idgedung, :nama, :status, :request_by, TO_DATE(:request_date, 'yyyy/mm/dd hh24:mi:ss')) returning id into :id`, {
+      id:data.id,
+      idgedung:data.id_gedung,
+      nama:data.nama,
+      status:data.status,
+      request_by: data.request_by,
+      request_date: data.request_date
     })
   return result
 }
