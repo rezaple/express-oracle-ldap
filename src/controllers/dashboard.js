@@ -27,10 +27,12 @@ const upload = multer({
   fileFilter: fileFilter
 }).single('file');
 
+
 function load_data(file) {
 	var wb = XLSX.readFile(file);
 	/* generate array of arrays */
 	const data = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1});
+
 	return data
 }
 
@@ -70,6 +72,7 @@ async function uploadNKA(req, res, next) {
     //   status:200,
     //   data:req.files,
     // });
+
     
   } catch (err) {
     res.status(500).json({
