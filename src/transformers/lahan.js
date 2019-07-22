@@ -10,6 +10,7 @@ function transformList(lahan){
         GUNA_LAHAN: lahan.GUNA_LAHAN?lahan.GUNA_LAHAN:"",
         SKHAK: lahan.SKHAK?lahan.SKHAK:"",
         TANGGAL_AKHIR: lahan.TANGGAL_AKHIR?lahan.TANGGAL_AKHIR:"",
+        EPOCH:lahan.TANGGAL_AKHIR?new Date(lahan.TANGGAL_AKHIR).getTime():"",
         NAMA_KLASIFIKASI: lahan.NAMA_KLASIFIKASI_ALIAS?lahan.NAMA_KLASIFIKASI_ALIAS:"",
         STATUS_SERTIFIKAT: lahan.STATUS_KEP?lahan.STATUS_KEP:"",
         //DESKRIPSI: lahan.DESKRIPSI?lahan.DESKRIPSI:"",
@@ -43,6 +44,7 @@ function transformKJPPLahan(kjpp){
         NAMA: kjpp.NAMA?kjpp.NAMA:"",
         LUAS: kjpp.LUAS?parseInt(kjpp.LUAS,10):0,
         TANGGAL: kjpp.TANGGAL?kjpp.TANGGAL:"",
+        EPOCH:kjpp.TANGGAL?new Date(kjpp.TANGGAL).getTime():"",
         HARGA: kjpp.HARGA?parseInt(kjpp.HARGA,10):0,
     }
 }
@@ -64,7 +66,8 @@ function transformNKALahan(nka){
         AKUMULASI_PENYUSUTAN: nka.AKUMULASI_PENYUSUTAN?parseInt(nka.AKUMULASI_PENYUSUTAN,10):0,
         BEBAN_PENYUSUTAN: nka.BEBAN_PENYUSUTAN?parseInt(nka.BEBAN_PENYUSUTAN,10):0,
         DESKRIPSI: nka.DESKRIPSI?nka.DESKRIPSI:"",
-        TANGGAL:nka.TANGGAL?nka.TANGGAL:""
+        TANGGAL:nka.TANGGAL?nka.TANGGAL:"",
+        EPOCH:nka.TANGGAL?new Date(nka.TANGGAL).getTime():"",
     }
 }
 
@@ -72,6 +75,7 @@ function transformSengketaAset(aset){
     return {
         ID: parseInt(aset.ID),
         TANGGAL:aset.TANGGAL?aset.TANGGAL:"",
+        EPOCH:aset.TANGGAL?new Date(aset.TANGGAL).getTime():"",
         STATUS:aset.STATUS?aset.STATUS:"",
         PERMASALAHAN_DAN_KATEGORI:aset.PERMASALAHAN_DAN_KATEGORI?aset.PERMASALAHAN_DAN_KATEGORI:"",
         RINGKASAN_PERMASALAHAN:aset.RINGKASAN_PERMASALAHAN?aset.RINGKASAN_PERMASALAHAN:"",
@@ -106,6 +110,7 @@ function transformSertifikatLahan(sert){
         SKHAK: sert.SKHAK?sert.SKHAK:"",
         LUAS: sert.LUAS?sert.LUAS:0,
         TANGGAL_AKHIR: sert.TANGGAL_AKHIR?sert.TANGGAL_AKHIR:"",
+        EPOCH:sert.TANGGAL_AKHIR?new Date(sert.TANGGAL_AKHIR).getTime():"",
         LOKASI_ASET: sert.LOKASI_ASET?sert.LOKASI_ASET:"",
         ATTACHMENT:sert.attachment
     }

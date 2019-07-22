@@ -52,6 +52,7 @@ function transformLahan(data){
         GUNA_LAHAN: data.GUNA_LAHAN?data.GUNA_LAHAN:"",
         SKHAK: data.SKHAK?data.SKHAK:"",
         TANGGAL_AKHIR: data.TANGGAL_AKHIR?data.TANGGAL_AKHIR:"",
+        EPOCH: data.TANGGAL_AKHIR?new Date(data.TANGGAL_AKHIR).getTime():"",
         NAMA_KLASIFIKASI: data.NAMA_KLASIFIKASI?data.NAMA_KLASIFIKASI:"",
         STATUS_KEP: data.STATUS_KEP?data.STATUS_KEP:"",
         DESKRIPSI: data.DESKRIPSI?data.DESKRIPSI:"",
@@ -96,7 +97,8 @@ function transformNKAGedung(data){
         AKUMULASI_PENYUSUTAN: data.AKUMULASI_PENYUSUTAN?parseInt(data.AKUMULASI_PENYUSUTAN,10):0,
         BEBAN_PENYUSUTAN: data.BEBAN_PENYUSUTAN?parseInt(data.BEBAN_PENYUSUTAN,10):0,
         DESKRIPSI: data.DESKRIPSI?data.DESKRIPSI:"",
-        TANGGAL:data.TANGGAL?data.TANGGAL:""
+        TANGGAL:data.TANGGAL?data.TANGGAL:"",
+        EPOCH:data.TANGGAL?new Date(data.TANGGAL).getTime():""
     }
 }
 
@@ -104,6 +106,7 @@ function transformTagihanListrik(data){
     return {
         ID: parseInt(data.ID,10),
         ID_PELANGGAN: data.ID_PELANGGAN?data.ID_PELANGGAN:"",
+        EPOCH: data.TANGGAL?new Date(data.TANGGAL).getTime():"",
         TANGGAL: data.TANGGAL?data.TANGGAL:"",
         JUMLAH_PEMAKAIAN: data.JUMLAH_PEMAKAIAN?parseInt(data.JUMLAH_PEMAKAIAN,10):0,
         BIAYA_LISTRIK: data.BIAYA_LISTRIK?parseInt(data.BIAYA_LISTRIK,10):0
@@ -115,6 +118,7 @@ function transformTagihanAir(data){
         ID: parseInt(data.ID,10),
         ID_PELANGGAN: data.ID_PELANGGAN?data.ID_PELANGGAN:"",
         TANGGAL: data.TANGGAL?data.TANGGAL:"",
+        EPOCH: data.TANGGAL?new Date(data.TANGGAL).getTime():"",
         JUMLAH_PEMAKAIAN: data.JUMLAH_PEMAKAIAN?parseInt(data.JUMLAH_PEMAKAIAN,10):0,
         BIAYA_AIR: data.BIAYA_AIR?parseInt(data.BIAYA_AIR,10):0
     }
