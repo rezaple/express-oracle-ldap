@@ -8,6 +8,7 @@ const area = require('../controllers/area');
 const lahan = require('../controllers/lahan');
 const gedung = require('../controllers/gedung');
 const requestAsset = require('../controllers/requestAsset');
+const dashboard = require('../controllers/dashboard');
 
 router.route('/basedata/regional')
       .get(basedata.getRegional);
@@ -33,7 +34,8 @@ router.route('/kota/:idCity/kecamatan')
       .get(area.getSubDistricts);
 router.route('/login')
       .post(auth.login);
-
+router.route('/upload-nka')
+      .post(dashboard.uploadNKA);
 //area need authenticate
 router.use(function (req, res, next) {
   const token = req.headers.authorization;
