@@ -52,8 +52,11 @@ async function getDetail(req, res, next) {
 
 async function getTagihanListrik(req, res, next) {
   try {
-    const id = parseInt(req.params.id, 10);
-    const rows = await gedung.getListrik(id);
+    const context = {
+      id:parseInt(req.params.id, 10),
+      tahun:parseInt(req.query.tahun,10)||new Date().getFullYear()
+    }
+    const rows = await gedung.getListrik(context);
     res.status(200).json({
       status:200,
 			data:rows,
@@ -68,8 +71,11 @@ async function getTagihanListrik(req, res, next) {
 
 async function getTagihanAir(req, res, next) {
   try {
-    const id = parseInt(req.params.id, 10);
-    const rows = await gedung.getAir(id);
+    const context = {
+      id:parseInt(req.params.id, 10),
+      tahun:parseInt(req.query.tahun,10)||new Date().getFullYear()
+    }
+    const rows = await gedung.getAir(context);
     res.status(200).json({
       status:200,
 			data:rows,

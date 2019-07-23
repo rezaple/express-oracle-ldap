@@ -227,16 +227,16 @@ async function detailAsetGedung(){
     return result.filter(function() { return true; });
 }
 
-async function getListrik(id)
+async function getListrik(context)
 {
-    const resTagihanListrik = await database.simpleExecute(`SELECT * FROM LA_LISTRIK_GEDUNG WHERE IDGEDUNG= :ID_GEDUNG ORDER BY TANGGAL DESC`, {ID_GEDUNG: id});
+    const resTagihanListrik = await database.simpleExecute(`SELECT * FROM LA_LISTRIK_GEDUNG WHERE IDGEDUNG= :ID_GEDUNG AND EXTRACT( YEAR FROM TANGGAL) = :YEAR ORDER BY TANGGAL DESC`, {ID_GEDUNG: context.id, YEAR:context.tahun});
     const result =  resTagihanListrik.rows.length > 0 ? resTagihanListrik.rows.map(listrik=>transform.transformTagihanListrik(listrik)) : [];
     return result
 }
 
-async function getAir(id)
+async function getAir(context)
 {
-    const resTagihanAir = await database.simpleExecute(`SELECT * FROM LA_AIR WHERE IDGEDUNG=:ID_GEDUNG ORDER BY TANGGAL DESC`, {ID_GEDUNG: id});
+    const resTagihanAir = await database.simpleExecute(`SELECT * FROM LA_AIR WHERE IDGEDUNG=:ID_GEDUNG AND EXTRACT( YEAR FROM TANGGAL) = :YEAR ORDER BY TANGGAL DESC`, {ID_GEDUNG: context.id, YEAR:context.tahun});
     const result =  resTagihanAir.rows.length > 0 ? resTagihanAir.rows.map(air=>transform.transformTagihanAir(air) ): [];
 
     return result;
