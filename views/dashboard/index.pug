@@ -1,0 +1,120 @@
+extends layouts/_layout.pug
+
+block variables
+	- var activePage = 'dashboard'
+	- var activeGroup = 'none'
+
+block content
+	.app-title
+		div
+			h1
+				i.fa.fa-dashboard
+				|  Dashboard
+
+		ul.app-breadcrumb.breadcrumb
+			li.breadcrumb-item
+				i.fa.fa-home.fa-lg
+			li.breadcrumb-item
+				a(href='#') Dashboard
+
+	- if (messages.error)
+		.alert.alert-danger.alert-dismissable
+			button.close(type='button', data-dismiss='alert', aria-hidden='true') × 
+			| #{messages.error}
+			
+	.tile.mb-4
+		.row
+			.col-lg-12
+				h3 Summary Report
+		.row
+			.col-lg-3
+				.bs-component
+					.card.mb-3.border-primary
+						.card-body
+							blockquote.card-blockquote
+								p
+									| Jumlah Lahan
+								footer
+									h4 #{data.lahan.TOTAL_LAHAN.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
+			.col-lg-3
+				.bs-component
+					.card.mb-3.border-primary
+						.card-body
+							blockquote.card-blockquote
+								p
+									| Luas Lahan
+								footer
+									h4 #{data.lahan.TOTAL_LUAS_LAHAN.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")} m2
+			.col-lg-3
+				.bs-component
+					.card.mb-3.border-primary
+						.card-body
+							blockquote.card-blockquote
+								p
+									| Jumlah Gedung
+								footer
+									h4 #{data.gedung.TOTAL_GEDUNG.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
+			.col-lg-3
+				.bs-component
+					.card.mb-3.border-primary
+						.card-body
+							blockquote.card-blockquote
+								p
+									| Luas Gedung
+								footer
+									h4 #{data.gedung.TOTAL_LUAS_BANGUNAN.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")} m2
+		.row
+			.col-lg-12
+				h3 
+		.row
+			.col-lg-4
+				.bs-component
+					.card
+						h4.card-header Klaifikasi Aset
+						.card-body
+							h5.card-title Jumlah Q1
+							h6.card-subtitle.text-muted #{data.primer.TOTAL}
+						.card-body
+							h5.card-title Jumlah Q2
+							h6.card-subtitle.text-muted #{data.sekunder.TOTAL}
+						.card-body
+							h5.card-title Jumlah Q3
+							h6.card-subtitle.text-muted #{data.tersier.TOTAL}
+						.card-body
+							h5.card-title Jumlah Q4
+							h6.card-subtitle.text-muted #{data.residu.TOTAL}
+			.col-lg-4
+				.bs-component
+					.card
+						h4.card-header Status Tanah
+						.card-body
+							h5.card-title Hak Guna Bangunan
+							h6.card-subtitle.text-muted #{data.status_tanah.HGB}
+						.card-body
+							h5.card-title Hak Pakai
+							h6.card-subtitle.text-muted #{data.status_tanah.HP}
+						.card-body
+							h5.card-title Hak Milik
+							h6.card-subtitle.text-muted #{data.status_tanah.HM}
+						.card-body
+							h5.card-title Jatuh Tempo
+							h6.card-subtitle.text-muted #{data.status_tanah.JATUH_TEMPO}
+						.card-body
+							h5.card-title Tidak Bersertifikat
+							h6.card-subtitle.text-muted #{data.status_tanah.TIDAK_BERSERTIFKAT}
+			.col-lg-4
+				.bs-component
+					.card
+						h4.card-header Sengketa Aset
+						.card-body
+							h5.card-title Litigasi
+							h6.card-subtitle.text-muted #{data.sengketa_aset.LITIGASI}
+						.card-body
+							h5.card-title Non Litigasi
+							h6.card-subtitle.text-muted #{data.sengketa_aset.NON_LITIGASI}
+						.card-body
+							h5.card-title Tidak Ada Masalah
+							h6.card-subtitle.text-muted #{data.sengketa_aset.TIDAK_ADA_MASALAH}
+						.card-body
+							h5.card-title Tidak Ada Status
+							h6.card-subtitle.text-muted #{data.sengketa_aset.TIDAK_ADA_STATUS}

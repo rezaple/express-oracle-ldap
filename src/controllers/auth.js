@@ -66,7 +66,8 @@ function verifyJwt(token){
 }
 
 module.exports = {
-  login
+  login,
+  generateToken
 }
 
 

@@ -39,5 +39,29 @@ function simpleExecute(statement, binds = [], opts = {}) {
     }
   });
 }
-
 module.exports.simpleExecute = simpleExecute;
+
+function simpleBatchExecute(statement, binds = [], opts = {}) {
+  return new Promise(async (resolve, reject) => {
+    let conn;
+    
+    try {
+      conn = await oracledb.getConnection();
+
+      const result = conn.executeMany(statement, binds,opts);
+
+      resolve(result);
+    } catch (err) {
+      reject(err);
+    } finally {
+      if (conn) { // conn assignment worked, need to close
+        try {
+          await conn.close();
+        } catch (err) {
+          console.log(err);
+        }
+      }
+    }
+  });
+}
+module.exports.simpleBatchExecute = simpleBatchExecute;

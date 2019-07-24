@@ -9,7 +9,31 @@ const lahan = require('../controllers/lahan');
 const gedung = require('../controllers/gedung');
 const requestAsset = require('../controllers/requestAsset');
 const dashboard = require('../controllers/dashboard');
+const multer = require('multer');
 
+const storage = multer.diskStorage({
+  destination: function(req, file, cb) {
+    cb(null, './public/sheets/');
+  },
+  filename: function(req, file, cb) {
+    cb(null, Math.floor(new Date() / 1000) + file.originalname);
+  }
+});
+
+const fileFilter = (req, file, cb) => {
+  if (!file.originalname.match(/\.(xls|xlsx)$/)) {
+    return cb(new Error('Only excel files are allowed!'));
+  }
+
+  cb(null, true)
+};
+const upload = multer({
+      storage: storage,
+      limits: {
+            fileSize: 1024 * 1024 * 5
+      },
+      fileFilter: fileFilter
+});
 router.route('/basedata/regional')
       .get(basedata.getRegional);
 router.route('/basedata/regional/:id/witel')
@@ -34,8 +58,7 @@ router.route('/kota/:idCity/kecamatan')
       .get(area.getSubDistricts);
 router.route('/login')
       .post(auth.login);
-router.post('/upload-nka',
-      dashboard.uploadNKA)
+router.post('/upload-nka',upload.single('file'), dashboard.uploadNKA)
 //area need authenticate
 router.use(function (req, res, next) {
   const token = req.headers.authorization;

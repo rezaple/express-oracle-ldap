@@ -1,0 +1,62 @@
+extends layouts/_layout.pug
+
+block variables
+	- var activePage = 'upload-nka'
+	- var activeGroup = 'ui-upload'
+
+block title
+	title Upload NKA
+
+block content
+	.app-title
+		div
+			h1
+				i.fa.fa-edit
+				|  Upload NKA
+
+		ul.app-breadcrumb.breadcrumb
+			li.breadcrumb-item
+				i.fa.fa-home.fa-lg
+			li.breadcrumb-item
+				| Upload Dokumen
+			li.breadcrumb-item
+				a(href="#") Upload NKA
+
+	.row
+		.col-md-12
+			form(method="post",enctype="multipart/form-data",action="upload-nka")
+				.tile
+					h3.tile-title Form Upload
+					.tile-body
+						- if (messages.info)
+							.alert.alert-primary.alert-dismissable
+								button.close(type='button', data-dismiss='alert', aria-hidden='true') × 
+								| #{messages.info}
+						
+						- if (messages.error)
+							.alert.alert-danger.alert-dismissable
+								button.close(type='button', data-dismiss='alert', aria-hidden='true') × 
+								| #{messages.error}
+
+						.form-group
+							label.control-label NKA File
+							input.form-control(name="file",type="file")
+
+						.form-group
+							.form-check
+								label.form-check-label
+									span Contoh format : 
+										a(href="http://mrra.telkom.co.id/gis/assets/uploads/dbaset/template_upload_nka.xlsx") Download
+									br
+									| Baris pertama harus diisi nama kolom dari tabel yang akan digunakan
+									br
+									| Fitur upload digunakan hanya untuk insert ke satu tabel, sheet pertama yang menjadi patokan data.
+									br
+									| Ekstensi yang digunakan format .xlsx atau .xls
+
+					.tile-footer
+						button.btn.btn-primary(type="submit")
+							i.fa.fa-fw.fa-lg.fa-arrow-up
+							| Upload
+		.clearix
+

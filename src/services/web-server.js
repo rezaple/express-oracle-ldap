@@ -1,22 +1,31 @@
 const http = require('http');
 const express = require('express');
+const session = require('express-session');
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
-const path = require("path");
 const webServerConfig = require('../config/web-server.js');
 const router = require('./router.js');
+const dashboardRouter = require('./dashboard-router.js');
+const flash = require('express-flash');
 
 let httpServer;
 
 function initialize() {
   return new Promise((resolve, reject) => {
     const app = express();
-
+    app.set('view engine', 'pug')
     app.use(morgan('combined'));
     app.use(express.static('public'));
+    app.use(session({
+      secret: 'myassist2019telkom87',
+      resave: true,
+      saveUninitialized: true
+    }));
     app.use(bodyParser.json({limit: '50mb'}));
     app.use(bodyParser.urlencoded({limit: '50mb', extended: false}));
-
+    app.use(flash());
+    app.locals.moment = require('moment');
+    
     app.use((req, res, next) => {
       res.header("Access-Control-Allow-Origin", "*");
       res.header(
@@ -31,11 +40,8 @@ function initialize() {
     });
 
     app.use('/api', router);
-    
-    app.get('/', (req, res)=>{
-      res.sendFile(path.join(__dirname+'/../index.html'));
-    })
-    
+    app.use('/', dashboardRouter);
+
     app.use((req, res, next) => {
       const error = new Error("Not found");
       error.status = 404;
