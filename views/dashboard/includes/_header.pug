@@ -1,5 +1,5 @@
 header.app-header
-	a.app-header__logo(href='index.html') MyAssist
+	a.app-header__logo(href='#') MyAssist
 
 	// Sidebar toggle button
 	a.app-sidebar__toggle(href='#', data-toggle='sidebar', aria-label="Hide Sidebar")
@@ -13,6 +13,6 @@ header.app-header
 			ul.dropdown-menu.settings-menu.dropdown-menu-right
 
 				li
-					a.dropdown-item(href='/logout')
+					a.dropdown-item(href=baseUrl+'/logout')
 						i.fa.fa-sign-out.fa-lg
 						|  Logout

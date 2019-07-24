@@ -25,6 +25,7 @@ function initialize() {
     app.use(bodyParser.urlencoded({limit: '50mb', extended: false}));
     app.use(flash());
     app.locals.moment = require('moment');
+    app.locals.baseUrl = webServerConfig.baseUrl
     
     app.use((req, res, next) => {
       res.header("Access-Control-Allow-Origin", "*");

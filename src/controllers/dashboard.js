@@ -5,7 +5,6 @@ const ldap = require('ldapjs');
 const auth = require('./auth');
 const summary = require('../models/summary');
 const requestAsset = require('../models/requestAsset');
-const webServer = require('../config/web-server');
 
 function load_data(file) {
 	var wb = XLSX.readFile(file);
@@ -23,9 +22,7 @@ function showLogin(req, res, next){
   if (req.session.loggedin) {
     return res.redirect('/home');
   }
-
-  const baseUrl = webServer.baseUrl
-  res.render('dashboard/login', {baseUrl});
+  res.render('dashboard/login');
 }
 
 function showIndex(req, res, next){
@@ -37,8 +34,7 @@ function showIndex(req, res, next){
 
 function showUploadNKA(req, res, next){
   if (req.session.loggedin) {
-    const baseUrl = webServer.baseUrl
-    res.render('dashboard/upload-nka', {baseUrl});
+    res.render('dashboard/upload-nka');
   }
   redirectToLogin(req, res)
 }

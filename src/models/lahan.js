@@ -465,7 +465,7 @@ function setFilterNearMe(sql, params)
             else if(parseInt(dataStatusSertifikat[i])===3)
                 sql += ` AND (SKHAK = 'HP' AND TANGGAL_AKHIR > TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD'))`;
             else if(parseInt(dataStatusSertifikat[i])===4)
-                sql += ` (AND SKHAK = 'HM' AND TANGGAL_AKHIR > TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD'))`;
+                sql += ` AND (SKHAK = 'HM' AND TANGGAL_AKHIR > TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD'))`;
         }   
     }
 
