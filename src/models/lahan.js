@@ -412,7 +412,7 @@ function setFilter(sql, params)
             else if(parseInt(dataStatusSertifikat[i])===3)
                 sql += ` AND (d.SKHAK = 'HP' AND d.TANGGAL_AKHIR > TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD'))`;
             else if(parseInt(dataStatusSertifikat[i])===4)
-                sql += ` (AND d.SKHAK = 'HM' AND d.TANGGAL_AKHIR > TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD'))`;
+                sql += ` AND (d.SKHAK = 'HM' AND d.TANGGAL_AKHIR > TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD'))`;
         }   
     }
 
