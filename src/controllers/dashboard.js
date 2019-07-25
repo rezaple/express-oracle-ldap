@@ -49,7 +49,22 @@ async function showRequestLahan(req, res, next){
       const result = await requestAsset.listRequestLahan(req)
       res.render('dashboard/request-lahan', {data:result.data, paginator: result.paginator});
     }catch (err) {
-      console.log(err.message)
+      req.flash('error', `Maaf, terjadi kesalahan di server <${err.message}>`);
+      return res.redirect(baseUrl+'/home')
+    }
+  }
+  redirectToLogin(req, res)
+}
+
+async function showDetailRequestLahan(req, res, next){
+  if (req.session.loggedin) {
+    try{
+      req.currentUser = {
+        nik:req.session.username
+      }
+      // const result = await requestAsset.listRequestLahan(req)
+      res.render('dashboard/detail-request-lahan');
+    }catch (err) {
       req.flash('error', `Maaf, terjadi kesalahan di server <${err.message}>`);
       return res.redirect(baseUrl+'/home')
     }
@@ -66,7 +81,20 @@ async function showRequestGedung(req, res, next){
       const result = await requestAsset.listRequestGedung(req)
       res.render('dashboard/request-gedung', {data:result.data, paginator: result.paginator});
     }catch (err) {
-      console.log(err.message)
+      req.flash('error', `Maaf, terjadi kesalahan di server <${err.message}>`);
+      return res.redirect(baseUrl+'/home')
+    }
+  }
+  redirectToLogin(req, res)
+}
+
+function showDetailRequestGedung(req, res, next){
+  if (req.session.loggedin) {
+    try{
+      req.currentUser = {
+        nik:req.session.username
+      }
+    }catch (err) {
       req.flash('error', `Maaf, terjadi kesalahan di server <${err.message}>`);
       return res.redirect(baseUrl+'/home')
     }
@@ -184,7 +212,9 @@ module.exports = {
   showHome,
   showUploadNKA,
   showRequestLahan,
+  showDetailRequestLahan,
   showRequestGedung,
+  showDetailRequestGedung,
   login,
   logout
 }

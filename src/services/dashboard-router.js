@@ -31,14 +31,15 @@ router.get('/home', dashboard.showHome);
 router.get('/login', dashboard.showLogin)
 router.post('/login', dashboard.login);
 router.get('/logout', dashboard.logout);
-
 router.get('/upload-nka', dashboard.showUploadNKA);
-router.get('/request-lahan', dashboard.showRequestLahan);
-router.get('/request-gedung', dashboard.showRequestGedung);
 router.post('/upload-nka',upload.single('file'), dashboard.uploadNKA2);
+router.get('/request-lahan', dashboard.showRequestLahan);
+router.get('/request-lahan/:id', dashboard.showDetailRequestLahan);
+router.get('/request-gedung', dashboard.showDetailRequestGedung);
+router.get('/request-gedung/:id', dashboard.showUploadNKA);
 
-// router.get('/:page', function(req, res){
-//       res.render(`dashboard/${req.params.page}`)
-// });
+router.get('/:page', function(req, res){
+      res.render(`dashboard/${req.params.page}`)
+});
 
 module.exports = router;

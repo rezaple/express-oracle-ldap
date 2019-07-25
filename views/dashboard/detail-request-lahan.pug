@@ -1,0 +1,131 @@
+extends layouts/_layout.pug
+
+block variables
+	- var activePage = 'invoice-page'
+	- var activeGroup = 'pages'
+
+block title
+	title Invoice - Vali Admin
+
+block content
+	.app-title
+		div
+			h1
+				i.fa.fa-file-text-o
+				|  Invoice
+			p A Printable Invoice Format
+
+		ul.app-breadcrumb.breadcrumb
+			li.breadcrumb-item
+				i.fa.fa-home.fa-lg
+			li.breadcrumb-item
+				a(href='#') Invoice
+
+	.row
+		.col-md-12
+			.tile
+				section.invoice
+
+					.row.mb-4
+						.col-6
+							h2.page-header
+								i.fa.fa-globe
+								|  Vali Inc
+						.col-6
+							h5.text-right Date: 01/01/2016
+
+					.row.invoice-info
+						.col-4
+							| From
+							address
+								strong Vali Inc.
+								br
+								| 518 Akshar Avenue
+								br
+								| Gandhi Marg
+								br
+								| New Delhi
+								br
+								| Email: hello@vali.com
+
+						.col-4
+							| To
+							address
+								strong John Doe
+								br
+								| 795 Folsom Ave, Suite 600
+								br
+								| San Francisco, CA 94107
+								br
+								| Phone: (555) 539-1037
+								br
+								| Email: john.doe@example.com
+
+						.col-4
+							b Invoice #007612
+							br
+							br
+							b Order ID:
+							|  4F3S8J
+							br
+							b Payment Due:
+							|  2/22/2014
+							br
+							b Account:
+							|  968-34567
+							
+					.row
+						.col-12.table-responsive
+							table.table.table-striped
+								thead
+									tr
+										th Qty
+										th Product
+										th Serial #
+										th Description
+										th Subtotal
+								tbody
+									tr
+										td 1
+										td The Hunger Games
+										td 455-981-221
+										td El snort testosterone trophy driving gloves handsome
+										td $41.32
+									tr
+										td 1
+										td City of Bones
+										td 247-925-726
+										td Wes Anderson umami biodiesel
+										td $75.52
+									tr
+										td 1
+										td The Maze Runner
+										td 545-457-47
+										td Terry Richardson helvetica tousled street art master
+										td $15.25
+									tr
+										td 1
+										td The Fault in Our Stars
+										td 757-855-857
+										td Tousled lomo letterpress
+										td $03.44
+
+					.row.d-print-none.mt-2
+						.col-12.text-right
+							a.btn.btn-primary(href='javascript:window.print();', target='_blank')
+								i.fa.fa-print
+								|  Print
+	
+	.tile.mb-04
+		.row
+			.col-lg-4
+				.bs-component
+					.card
+						img(style='height: 200px; width: 100%; display: block;', src='data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22318%22%20height%3D%22180%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20318%20180%22%20preserveAspectRatio%3D%22none%22%3E%3Cdefs%3E%3Cstyle%20type%3D%22text%2Fcss%22%3E%23holder_158bd1d28ef%20text%20%7B%20fill%3Argba(255%2C255%2C255%2C.75)%3Bfont-weight%3Anormal%3Bfont-family%3AHelvetica%2C%20monospace%3Bfont-size%3A16pt%20%7D%20%3C%2Fstyle%3E%3C%2Fdefs%3E%3Cg%20id%3D%22holder_158bd1d28ef%22%3E%3Crect%20width%3D%22318%22%20height%3D%22180%22%20fill%3D%22%23777%22%3E%3C%2Frect%3E%3Cg%3E%3Ctext%20x%3D%22129.359375%22%20y%3D%2297.35%22%3EImage%3C%2Ftext%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E', alt='Card image')
+						.card-body
+							p.card-text
+								| Some quick example text to build on the card title and make up the bulk of the card's content.
+							a.card-link(href='#') Card link
+							a.card-link(href='#') Another link
+						.card-footer.text-muted
+							| 2 days ago

@@ -40,7 +40,8 @@ async function getAll(req)
     left join LA_ANALISIS_SCORE b on TO_CHAR(a.IDAREAL) = TO_CHAR(b.IDAREAL)
     left join LA_REF_ANALISIS_SCORE_KLAS e on TO_NUMBER(b.KLASIFIKASI) = e.ID
     left join LA_REF_STATUS_KEPEMILIKAN f on TO_CHAR(f.ID) = TO_CHAR(a.STATUS_KEPEMILIKAN)
-    left join LA_SERTIPIKAT_BARU d on TO_CHAR(d.IDAREAL) = TO_CHAR(a.IDAREAL)`;
+    left join LA_SERTIPIKAT_BARU d on TO_CHAR(d.IDAREAL) = TO_CHAR(a.IDAREAL)
+    left join LA_POTENSI_SENGKETA_LAHAN g ON TO_CHAR(g.IDAREAL) = TO_CHAR(a.IDAREAL)`;
 
   const query = setFilter(sql, params);
   const result = await database.simpleExecute(query, {});
@@ -105,7 +106,8 @@ async function getAllPagination(req)
     left join LA_ANALISIS_SCORE b on TO_CHAR(a.IDAREAL) = TO_CHAR(b.IDAREAL)
         left join LA_REF_ANALISIS_SCORE_KLAS e on TO_NUMBER(b.KLASIFIKASI) = e.ID
         left join LA_REF_STATUS_KEPEMILIKAN f on TO_CHAR(f.ID) = TO_CHAR(a.STATUS_KEPEMILIKAN)
-        left join LA_SERTIPIKAT_BARU d on TO_CHAR(d.IDAREAL) = TO_CHAR(a.IDAREAL) `;
+        left join LA_SERTIPIKAT_BARU d on TO_CHAR(d.IDAREAL) = TO_CHAR(a.IDAREAL)
+        left join LA_POTENSI_SENGKETA_LAHAN g ON TO_CHAR(g.IDAREAL) = TO_CHAR(a.IDAREAL) `;
 
     const query = setFilter(sql, params);
     const dataParams = setParams(params);
@@ -428,6 +430,11 @@ function setFilter(sql, params)
         const dataKlasifikasi= params.klasifikasi.split(',');
         const klasifikasi = dataKlasifikasi.map(x => "'" + x.toUpperCase() + "'").toString();
         sql += ` AND e.NAMA_KLASIFIKASI IN (${klasifikasi})`;
+    }
+
+    if(params.status_sengketa!== undefined && params.status_sengketa.length > 0){
+        const statusSengketa=params.status_sengketa.toUpperCase();
+        sql += ` AND g.STATUS = '${statusSengketa}'`;
     }
 
     if(params.nama!== undefined && params.nama.length > 0){
