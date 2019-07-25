@@ -5,6 +5,7 @@ const ldap = require('ldapjs');
 const auth = require('./auth');
 const summary = require('../models/summary');
 const requestAsset = require('../models/requestAsset');
+const {baseUrl} = require('../config/web-server.js');
 
 function load_data(file) {
 	var wb = XLSX.readFile(file);
@@ -15,19 +16,19 @@ function load_data(file) {
 
 function redirectToLogin(req, res){
   req.flash('info', 'Maaf, Anda tidak dapat mengakses halaman yang Anda tuju!');
-  return res.redirect('/login');
+  return res.redirect(baseUrl+'/login');
 }
 
 function showLogin(req, res, next){
   if (req.session.loggedin) {
-    return res.redirect('/home');
+    return res.redirect(baseUrl+'/home');
   }
   res.render('dashboard/login');
 }
 
 function showIndex(req, res, next){
   if (req.session.loggedin) {
-    return res.redirect('/home');
+    return res.redirect(baseUrl+'/home');
   }
   res.render('dashboard/blank');
 }
@@ -50,7 +51,7 @@ async function showRequestLahan(req, res, next){
     }catch (err) {
       console.log(err.message)
       req.flash('error', `Maaf, terjadi kesalahan di server <${err.message}>`);
-      return res.redirect('/home')
+      return res.redirect(baseUrl+'/home')
     }
   }
   redirectToLogin(req, res)
@@ -67,7 +68,7 @@ async function showRequestGedung(req, res, next){
     }catch (err) {
       console.log(err.message)
       req.flash('error', `Maaf, terjadi kesalahan di server <${err.message}>`);
-      return res.redirect('/home')
+      return res.redirect(baseUrl+'/home')
     }
   }
   redirectToLogin(req, res)
@@ -80,7 +81,7 @@ function logout(req, res, next){
     }
     else
     {
-      res.redirect('/login');
+      res.redirect(baseUrl+'/login');
     }
   });
 }
@@ -104,7 +105,7 @@ async function showHome(req, res, next){
 function login(req, res, next){
   if (!req.body.nik || !req.body.password) {
     req.flash('info', 'Maaf, kredential yang anda masukkan salah!');
-    return res.redirect('/login');
+    return res.redirect(baseUrl+'/login');
   }else{
     const context = {};
     context.nik = req.body.nik;
@@ -118,13 +119,13 @@ function login(req, res, next){
       client.bind(context.nik, context.password, function(err) {
         if (err) {
           req.flash('info', 'Maaf, kredential yang anda masukkan salah!');
-          return res.redirect('/login');
+          return res.redirect(baseUrl+'/login');
         } 
 
         req.session.loggedin =true
         req.session.username =context.nik
         req.session.token =auth.generateToken(context.nik)
-        return res.redirect('/home');
+        return res.redirect(baseUrl+'/home');
       });
     });
   }
@@ -171,7 +172,7 @@ async function uploadNKA2(req, res, next) {
     return res.redirect('/upload-nka');
   } catch (err) {
     req.flash('error', err.message);
-    return res.redirect('/upload-nka');
+    return res.redirect(baseUrl+'/upload-nka');
   }
 }
 
