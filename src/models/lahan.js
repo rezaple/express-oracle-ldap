@@ -404,16 +404,24 @@ function setFilter(sql, params)
     if(params.status_sertifikat!== undefined && params.status_sertifikat.length > 0){
         const dataStatusSertifikat= params.status_sertifikat.split(',');
         const tahunJatuhTempo= getJatuhTempo()
+        let queryStatusSertifikat='';
         for(var i = 0; i < dataStatusSertifikat.length; ++i){
+            let cond = i!==0?'OR':''            
             if(parseInt(dataStatusSertifikat[i])===1)
-                sql += ` AND (d.SKHAK = 'HGB' AND d.TANGGAL_AKHIR > TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD'))`;
-            else if(parseInt(dataStatusSertifikat[i])===2)
-                sql += ` AND d.TANGGAL_AKHIR < TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD')`;
-            else if(parseInt(dataStatusSertifikat[i])===3)
-                sql += ` AND (d.SKHAK = 'HP' AND d.TANGGAL_AKHIR > TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD'))`;
-            else if(parseInt(dataStatusSertifikat[i])===4)
-                sql += ` AND (d.SKHAK = 'HM' AND d.TANGGAL_AKHIR > TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD'))`;
+                queryStatusSertifikat += ` ${cond} (d.SKHAK = 'HGB' AND d.TANGGAL_AKHIR > TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD'))`;
+            
+            if(parseInt(dataStatusSertifikat[i])===2)
+                queryStatusSertifikat += ` ${cond} d.TANGGAL_AKHIR < TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD')`;
+            
+            if(parseInt(dataStatusSertifikat[i])===3)
+                queryStatusSertifikat += ` ${cond} (d.SKHAK = 'HP' AND d.TANGGAL_AKHIR > TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD'))`;
+            
+            if(parseInt(dataStatusSertifikat[i])===4)
+                queryStatusSertifikat += ` ${cond} (d.SKHAK = 'HM' AND d.TANGGAL_AKHIR > TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD'))`;
         }   
+        if(queryStatusSertifikat!==null && queryStatusSertifikat!==undefined){
+            sql += ` AND (${queryStatusSertifikat})`
+        }
     }
 
     if(params.klasifikasi!== undefined && params.klasifikasi.length > 0){
@@ -457,16 +465,24 @@ function setFilterNearMe(sql, params)
     if(params.status_sertifikat!== undefined && params.status_sertifikat.length > 0){
         const dataStatusSertifikat= params.status_sertifikat.split(',');
         const tahunJatuhTempo= getJatuhTempo()
+        let queryStatusSertifikat='';
         for(var i = 0; i < dataStatusSertifikat.length; ++i){
+            let cond = i!==0?'OR':''
             if(parseInt(dataStatusSertifikat[i])===1)
-                sql += ` AND (SKHAK = 'HGB' AND TANGGAL_AKHIR > TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD'))`;
-            else if(parseInt(dataStatusSertifikat[i])===2)
-                sql += ` AND TANGGAL_AKHIR < TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD')`;
-            else if(parseInt(dataStatusSertifikat[i])===3)
-                sql += ` AND (SKHAK = 'HP' AND TANGGAL_AKHIR > TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD'))`;
-            else if(parseInt(dataStatusSertifikat[i])===4)
-                sql += ` AND (SKHAK = 'HM' AND TANGGAL_AKHIR > TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD'))`;
+                queryStatusSertifikat += ` ${cond} (SKHAK = 'HGB' AND TANGGAL_AKHIR > TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD'))`;
+            
+            if(parseInt(dataStatusSertifikat[i])===2)
+                queryStatusSertifikat += ` ${cond} TANGGAL_AKHIR < TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD')`;
+            
+            if(parseInt(dataStatusSertifikat[i])===3)
+                queryStatusSertifikat += ` ${cond} (SKHAK = 'HP' AND TANGGAL_AKHIR > TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD'))`;
+            
+            if(parseInt(dataStatusSertifikat[i])===4)
+                queryStatusSertifikat += ` ${cond} (SKHAK = 'HM' AND TANGGAL_AKHIR > TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD'))`;
         }   
+        if(queryStatusSertifikat!==null && queryStatusSertifikat!==undefined){
+            sql += ` AND (${queryStatusSertifikat})`
+        }
     }
 
     if(params.klasifikasi!== undefined && params.klasifikasi.length > 0){
