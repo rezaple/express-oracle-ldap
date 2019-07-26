@@ -183,6 +183,9 @@ async function getDetail(params, idGedung)
     let resTagihanAir = await database.simpleExecute(`SELECT t.* FROM LA_AIR t JOIN (SELECT IDGEDUNG, MAX(TANGGAL) AS TANGGAL FROM LA_AIR WHERE IDGEDUNG= :ID_GEDUNG GROUP BY IDGEDUNG ) m ON  m.IDGEDUNG = t.IDGEDUNG AND m.TANGGAL = t.TANGGAL WHERE ROWNUM=1`, {ID_GEDUNG: idGedung});
     result.air =  resTagihanAir.rows.length > 0 ? resTagihanAir.rows.map(air=>transform.transformTagihanAir(air) ): [];
 
+    let resTenant = await database.simpleExecute(`SELECT * FROM LA_TENANT WHERE IDGEDUNG = :ID_GEDUNG`, {ID_GEDUNG: idGedung});
+    result.tenant =  resTenant.rows.length > 0 ? resTenant.rows.map(tenant=>transform.transformTenantGedung(tenant)) : [];
+
     return result;
 }
 

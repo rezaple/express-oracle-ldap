@@ -12467,6 +12467,12 @@ be a descendant of the grid when it is being dragged.
   }
 }
 
+#map {
+  width: 100%;
+  height: 200px;
+  background: #ddd;
+}
+
 .light-text {
   font-weight: 300 !important;
 }

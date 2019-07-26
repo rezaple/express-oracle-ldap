@@ -59,11 +59,58 @@ async function showRequestLahan(req, res, next){
 async function showDetailRequestLahan(req, res, next){
   if (req.session.loggedin) {
     try{
-      req.currentUser = {
-        nik:req.session.username
+      const context = {
+        id: parseInt(req.params.id, 10),
+        nik: req.session.username
       }
-      // const result = await requestAsset.listRequestLahan(req)
-      res.render('dashboard/detail-request-lahan');
+      const data = await requestAsset.getRequestLahan(context)
+      // const data={
+      //   "lahan": {
+      //       "ID_LAHAN": null,
+      //       "ID_REQUEST": 12,
+      //       "NAMA": "Gedung Pemutih 2",
+      //       "ALAMAT": "jalan kiaracondong",
+      //       "COOR_X": -6.9249226,
+      //       "COOR_Y": 107.6440405,
+      //       "REGIONAL": 2,
+      //       "NOTES": "",
+      //       "STATUS": "ACCEPT",
+      //       "IMAGE": "http://10.60.164.5/myassist/images/1563429472138.png"
+      //   },
+      //   "images": [
+      //       {
+      //           "ID": 13,
+      //           "PATH": "http://10.60.164.5/myassist/images/1563429472138.png"
+      //       },
+      //       {
+      //           "ID": 11,
+      //           "PATH": "http://10.60.164.5/myassist/images/1563429386087.png"
+      //       },
+      //       {
+      //           "ID": 12,
+      //           "PATH": "http://10.60.164.5/myassist/images/1563429386090.png"
+      //       },
+      //       {
+      //           "ID": 14,
+      //           "PATH": "http://10.60.164.5/myassist/images/1563429472142.png"
+      //       }
+      //   ],
+      //   "gedung": [
+      //     {
+      //         "ID": 21,
+      //         "NAMA": "Gedung Terbaru 3",
+      //         "ALAMAT": "jl baru baru ini",
+      //         "PATH": "http://10.60.164.5/myassist/images/1563429472142.png"
+      //     },
+      //     {
+      //       "ID": 21,
+      //       "NAMA": "Gedung Terbaru 3",
+      //       "ALAMAT": "jl taman makam pahlawan",
+      //       "PATH": "http://10.60.164.5/myassist/images/1563429472142.png"
+      //     }
+      //   ]
+      // }
+      res.render('dashboard/detail-request-lahan',{data});
     }catch (err) {
       req.flash('error', `Maaf, terjadi kesalahan di server <${err.message}>`);
       return res.redirect(baseUrl+'/home')
@@ -88,12 +135,36 @@ async function showRequestGedung(req, res, next){
   redirectToLogin(req, res)
 }
 
-function showDetailRequestGedung(req, res, next){
+async function showDetailRequestGedung(req, res, next){
   if (req.session.loggedin) {
     try{
-      req.currentUser = {
-        nik:req.session.username
+      const context = {
+        id: parseInt(req.params.id, 10),
+        nik: req.session.username
       }
+      const data = await requestAsset.getRequestGedung(context)
+
+      // const data ={
+      //   "gedung": {
+      //       "ID_LAHAN": "",
+      //       "ID_GEDUNG": "",
+      //       "ID_REQUEST_LAHAN": 21,
+      //       "ID_REQUEST": 21,
+      //       "NAMA": "Gedung Terbaru 3",
+      //       "ALAMAT": "",
+      //       "NOTES": "",
+      //       "STATUS": "PENDING",
+      //       "IMAGE": "http://10.60.164.5/myassist/images/1563429386087.png"
+      //   },
+      //   "images": [
+      //       {
+      //           "ID": 11,
+      //           "PATH": "http://10.60.164.5/myassist/images/1563429386087.png"
+      //       }
+      //   ]
+      // }
+
+      res.render('dashboard/detail-request-gedung',{data});
     }catch (err) {
       req.flash('error', `Maaf, terjadi kesalahan di server <${err.message}>`);
       return res.redirect(baseUrl+'/home')

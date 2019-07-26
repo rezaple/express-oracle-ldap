@@ -102,6 +102,30 @@ function transformNKAGedung(data){
     }
 }
 
+function transformTenantGedung(data){
+    return {
+        ID: parseInt(data.ID),
+        NAMA_TENANT: data.NAMA_TENANT?data.NAMA_TENANT:"",
+        PERUNTUKAN: data.PERUNTUKAN?data.PERUNTUKAN:"",
+        NO_KONTRAK: data.NO_KONTRAK?data.NO_KONTRAK:"",
+        LUAS_KONTRAK: data.NET_AREA?parseInt(data.NET_AREA,10):0,
+        BASE_RENT: {
+            HARGA_PER_BULAN:data.HARGA_BR_PER_BULAN?parseInt(data.HARGA_BR_PER_BULAN,10):0,
+            JUMLAH_PER_BULAN:data.JUMLAH_BR_PER_BULAN?parseInt(data.JUMLAH_BR_PER_BULAN,10):0,
+            JUMLAH_PER_TAHUN:data.JUMLAH_BR_PER_TAHUN?parseInt(data.JUMLAH_BR_PER_TAHUN,10):0,
+        },
+        SERVICE_CHARGE: {
+            HARGA_PER_BULAN:data.HARGA_SC_PER_BULAN?parseInt(data.HARGA_SC_PER_BULAN,10):0,
+            JUMLAH_PER_BULAN:data.JUMLAH_SC_PER_BULAN?parseInt(data.JUMLAH_SC_PER_BULAN,10):0,
+            JUMLAH_PER_TAHUN:data.JUMLAH_SC_PER_TAHUN?parseInt(data.JUMLAH_SC_PER_TAHUN,10):0,
+        },
+        SKEMA_KONTRAK: data.CARA_PEMBAYARAN?data.CARA_PEMBAYARAN:"",
+        STATUS_KONTRAK: data.IS_REQUEST==='f'?'Non Active':'Active',
+        START_DATE:data.MULAI_KONTRAK?new Date(data.MULAI_KONTRAK).getTime():"",
+        END_DATE:data.AKHIR_KONTRAK?new Date(data.AKHIR_KONTRAK).getTime():""
+    }
+}
+
 function transformTagihanListrik(data){
     return {
         ID: parseInt(data.ID,10),
@@ -132,5 +156,6 @@ module.exports = {
     transformPBBGedung,
     transformNKAGedung,
     transformTagihanListrik,
-    transformTagihanAir
+    transformTagihanAir,
+    transformTenantGedung
 }

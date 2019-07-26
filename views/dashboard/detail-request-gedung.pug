@@ -1,0 +1,78 @@
+extends layouts/_layout.pug
+
+block variables
+	- var activePage = 'request-gedung'
+	- var activeGroup = 'ui-request'
+
+block title
+	title Detail Request Gedung
+
+block content
+	.app-title
+		div
+			h1
+				i.fa.fa-file-text-o
+				|  Detail Request Asset
+
+		ul.app-breadcrumb.breadcrumb
+			li.breadcrumb-item
+				i.fa.fa-home.fa-lg
+			li.breadcrumb-item
+				| Request Asset
+			li.breadcrumb-item
+				a(href='#') Request Gedung
+			li.breadcrumb-item
+				a(href='#') Detail Request Gedung
+
+	.row
+		.col-md-12
+			.tile
+				section.invoice
+					.row
+						#map
+					.row.invoice-info.mt-3
+						.col-12
+							address
+								.alert.alert-info.alert-dismissible.fade.show(role='alert')
+									|  Tipe request gedung adalah 
+									strong #{(data.gedung.ID_GEDUNG)?'Edit':'Insert'}
+									button.close(type='button', data-dismiss='alert', aria-label='Close')
+										span(aria-hidden='true') ×
+ 
+								h4 #{data.gedung.NAMA}
+								| #{_.startCase(_.toLower(data.gedung.ALAMAT))}
+								br
+								if(data.gedung.STATUS ==='PENDING')
+									h5
+										span.badge.badge-info #{_.capitalize(data.gedung.STATUS)}
+								else if(data.gedung.STATUS === 'DECLINE')
+									h5
+										span.badge.badge-danger #{_.capitalize(data.gedung.STATUS)}
+								else if(data.gedung.STATUS === 'REVISI')
+									h5
+										span.badge.badge-warning #{_.capitalize(data.gedung.STATUS)}
+								else if(data.gedung.STATUS === 'ACCEPT')
+									h5
+										span.badge.badge-success #{_.capitalize(data.gedung.STATUS)}
+
+					.row.d-print-none.mt-2
+						.col-12.text-right
+							if(data.gedung.STATUS ==='PENDING')
+								a.btn.btn-primary.mr-1(href='javascript:window.print();', target='_blank')
+									|  Accept 
+								a.btn.btn-danger.mr-1(href='javascript:window.print();', target='_blank')
+									|  Decline
+								a.btn.btn-warning(href='javascript:window.print();', target='_blank')
+									|  Revisi
+							else if(data.gedung.STATUS === 'REVISI')
+								a.btn.btn-primary.mr-1(href='javascript:window.print();', target='_blank')
+									|  Accept 
+								a.btn.btn-danger.mr-1(href='javascript:window.print();', target='_blank')
+									|  Decline
+								
+	.tile.mb-04
+		.row
+			each img in data.images
+				.col-lg-4
+					.bs-component
+						img.img-thumbnail(src=img.PATH, alt='Card image')

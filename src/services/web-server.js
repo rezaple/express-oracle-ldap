@@ -26,6 +26,7 @@ function initialize() {
     app.use(flash());
     app.locals.moment = require('moment');
     app.locals.baseUrl = webServerConfig.baseUrl
+    app.locals._ = require("lodash");
     
     app.use((req, res, next) => {
       res.header("Access-Control-Allow-Origin", "*");
