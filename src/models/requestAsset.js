@@ -572,10 +572,34 @@ async function storeExistRequestLahan(dataLahan){
     return result
 }
 
-async function upload(context){
+async function uploadLahan(context){
   try {
     const reqLahan =  await database.simpleExecute(`SELECT * from LA_REQUEST_LAHAN WHERE ID= :id AND REQUEST_BY = :request_by AND STATUS_REQUEST IN ('PENDING','REVISI')`, {id:context.id, request_by:context.nik})
     if(reqLahan.rows.length > 0){
+      const res = await upload(context)
+      return res
+    }
+    throw createError(404, 'Request Lahan tidak ditemukan!') 
+  } catch (e) {
+    throw createError(500,e.message);
+  }
+}
+
+async function uploadGedung(context){
+  try {
+    const reqGedung =  await database.simpleExecute(`SELECT * from LA_REQUEST_GEDUNG WHERE ID= :id AND REQUEST_BY = :request_by AND STATUS_REQUEST IN ('PENDING','REVISI')`, {id:context.id, request_by:context.nik})
+    if(reqGedung.rows.length > 0){
+      const res = await upload(context)
+      return res
+    }
+    throw createError(404, 'Request Gedung tidak ditemukan!') 
+  } catch (e) {
+    throw createError(500,e.message);
+  }
+}
+
+async function upload(context){
+  try {
       if(context.images instanceof Array){
         const imgPromises = context.images.map(async(image)=>{
           if(isBase64(image, {mime: true})){
@@ -596,8 +620,7 @@ async function upload(context){
         throw createError(400, 'Data yang dikirim bukan dalam format base64!')
       }
       throw createError(400, 'Gambar dibutuhkan!')      
-    }
-    throw createError(404, 'Request Lahan tidak ditemukan!') 
+
   } catch (e) {
       throw createError(500,e.message);
   }
@@ -677,6 +700,7 @@ module.exports={
   storeGedung,
   updateLahan,
   updateGedung,
-  upload,
+  uploadGedung,
+  uploadLahan,
   deleteImage
 };

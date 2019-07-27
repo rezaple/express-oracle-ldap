@@ -280,7 +280,7 @@ async function uploadImageLahan(req, res, next){
       type: 'LAHAN',
       created_date:getDate()
     };
-    const rows = await reqAsset.upload(context);
+    const rows = await reqAsset.uploadLahan(context);
     res.status(200).json({
       status:200,
 			data:rows,
@@ -303,7 +303,7 @@ async function uploadImageGedung(req, res, next){
       created_date:getDate()
     };
 
-    const rows = await reqAsset.upload(context);
+    const rows = await reqAsset.uploadGedung(context);
     res.status(200).json({
       status:200,
 			data:rows,
