@@ -295,7 +295,7 @@ async function getRequestLahan(context){
       const gedung = await database.simpleExecute(`SELECT * from LA_REQUEST_GEDUNG WHERE ID_REQUEST_LAHAN= :id`, {id:reqLahan.rows[0].ID})
       result.lahan = reqLahan.rows.reduce((acc, lahan)=>{
         return {
-          ID_LAHAN : lahan.IDAREAL,
+          ID_LAHAN : lahan.IDAREAL||"",
           ID_REQUEST : lahan.ID,
           NAMA : lahan.NAMA_LAHAN,
           ALAMAT : lahan.ALAMAT,
@@ -304,6 +304,7 @@ async function getRequestLahan(context){
           REGIONAL : lahan.TELKOM_REGIONAL,
           NOTES : lahan.NOTES||"",
           STATUS : lahan.STATUS_REQUEST,
+          TYPE : gedung.IDAREAL?'Edit':'Insert',
           IMAGE :  images.rows.length > 0 ? 'http://10.60.164.5/myassist/'+images.rows[0].FILE_PATH:""
         }
       },0)
@@ -341,13 +342,15 @@ async function getRequestGedung(context){
       const images = await database.simpleExecute(`SELECT ID, FILE_PATH from LA_REQUEST_ATTACHMENT WHERE IDREQUEST= :id AND TYPE ='GEDUNG'`, {id:reqGedung.rows[0].ID})
       result.gedung = reqGedung.rows.reduce((acc, gedung)=>{
         return {
-          ID_LAHAN : gedung.IDAREAL||"",
-          ID_REQUEST_LAHAN : gedung.ID_REQUEST_LAHAN||"",
           ID_REQUEST : gedung.ID,
+          ID_LAHAN : gedung.IDAREAL||"",
+          ID_GEDUNG: gedung.IDGEDUNG||"",
+          ID_REQUEST_LAHAN : gedung.ID_REQUEST_LAHAN||"",
           NAMA : gedung.NAMA,
           ALAMAT : gedung.ALAMAT||"",
           NOTES : gedung.NOTES||"",
           STATUS : gedung.STATUS_REQUEST,
+          TYPE : gedung.IDGEDUNG?'Edit':'Insert',
           IMAGE :  images.rows.length > 0 ? 'http://10.60.164.5/myassist/'+images.rows[0].FILE_PATH:""
         }
       },0)
