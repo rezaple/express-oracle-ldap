@@ -54,7 +54,7 @@ block content
 						span.text-muted.mr-2 Menampilkan 1-#{paginator.limit} dari #{paginator.total_count}
 						
 						.btn-group
-							a.btn.btn-primary.btn-sm(href=paginator.prev_page)
+							a.btn.btn-primary.btn-sm(href=paginator.prev_page.replace("http://10.60.164.5:3000", baseUrl))
 								i.fa.fa-chevron-left
-							a.btn.btn-primary.btn-sm(href=paginator.next_page)
+							a.btn.btn-primary.btn-sm(href=paginator.next_page.replace("http://10.60.164.5:3000", baseUrl))
 								i.fa.fa-chevron-right
