@@ -37,13 +37,14 @@ async function listRequestGedung(req)
 
     const sql=`
     SELECT
-      a.ID, a.NAMA, a.ALAMAT, a.STATUS_REQUEST, a.REQUEST_DATE, s2.PATH_FILE,
+      a.ID, a.NAMA, a.IDGEDUNG, a.ALAMAT, a.STATUS_REQUEST, a.REQUEST_DATE, s2.PATH_FILE,
       ROW_NUMBER() OVER (ORDER BY a.ID) RN
     FROM
       LA_REQUEST_GEDUNG a
     LEFT OUTER JOIN (SELECT IDREQUEST, MAX(FILE_PATH) PATH_FILE 
 			FROM LA_REQUEST_ATTACHMENT WHERE "TYPE"='GEDUNG' GROUP BY IDREQUEST ) s2
-     ON a.ID = s2.IDREQUEST WHERE a.REQUEST_BY=${req.currentUser.nik} ORDER BY a.REQUEST_DATE DESC`;
+     ON a.ID = s2.IDREQUEST WHERE a.REQUEST_BY=${req.currentUser.nik} 
+     AND (a.IDGEDUNG IS NOT NULL OR a.ID_REQUEST_LAHAN IS NOT NULL) ORDER BY a.REQUEST_DATE DESC`;
 
     const totalQuery = await database.simpleExecute(`SELECT count(*) as total_count FROM(${sql})`, {});
     const total= totalQuery.rows[0].TOTAL_COUNT;
@@ -445,7 +446,7 @@ async function storeGedung(req){
 
   //jika edit dari gedunglgsg, kan get data master gedung atau request gedung
   //jika pake id gedu 
-  if(data.id_gedung!==undefined || data.id_gedung ){
+  if(data.id_gedung!==undefined && data.id_gedung ){
     const reqGedung = await database.simpleExecute(`SELECT ID, ALAMAT, COOR_X, COOR_Y from LA_REQUEST_GEDUNG WHERE IDGEDUNG= :id AND REQUEST_BY = :request_by AND STATUS_REQUEST IN ('PENDING','REVISI')`, {id:data.id_gedung, request_by:data.request_by})
 
     if(reqGedung.rows.length > 0){
@@ -456,7 +457,7 @@ async function storeGedung(req){
       data.id = result.outBinds.id[0];
     }
    
- }else if(data.id_request_lahan!==undefined || data.id_request_lahan){
+ }else if(data.id_request_lahan!==undefined && data.id_request_lahan){
   const reqLahan = await database.simpleExecute(`SELECT ID, ALAMAT, COOR_X, COOR_Y from LA_REQUEST_LAHAN WHERE ID= :id AND REQUEST_BY = :request_by AND STATUS_REQUEST IN ('PENDING','REVISI')`, {id:data.id_request_lahan, request_by:data.request_by})
   if(reqLahan.rows.length > 0){
     result = await storeRequestGedung(data, reqLahan.rows[0])
@@ -469,6 +470,7 @@ async function storeGedung(req){
   return data;
 }
 
+//jika yang edit data gedung lama
 async function updateGedung(req, id){    
   const data = Object.assign({}, req);
   const reqGedung = await database.simpleExecute(`SELECT ID, ID_REQUEST_LAHAN from LA_REQUEST_GEDUNG WHERE ID= :id AND REQUEST_BY = :request_by AND STATUS_REQUEST IN ('PENDING','REVISI')`, {id:id, request_by:data.request_by})
@@ -479,6 +481,10 @@ async function updateGedung(req, id){
       const update = await updateRequestGedung(data,reqLahan.rows[0],id)
       return update;
     }
+  }
+
+  if(reqGedung.rows.length > 0 && reqGedung.rows[0].IDGEDUNG){
+
   }
   throw createError(406, 'Gagal memperbarui!')
 }

@@ -257,7 +257,6 @@ async function updateRequestAssetGedung(req, res, next) {
     const id = parseInt(req.params.id, 10);
     
     let data = getGedungFromRec(req);
-
     const rows = await reqAsset.updateGedung(data, id);
     res.status(200).json({
       status:200,

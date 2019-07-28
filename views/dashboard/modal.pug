@@ -1,0 +1,14 @@
+mixin modal(title,id, colorBg)
+    form(action = "/add", method = "POST")
+        .modal.fade(id=id,tabindex="-1",role="dialog",aria-labelledby=id+"Label" aria-hidden="true")
+                .modal-dialog
+                    .modal-content
+                        div(class='modal-header')
+                            h4.modal-title(id=id+"Label")= title
+                            button.close(type="button",data-dismiss="modal")
+                                span(aria-hidden="true") &times;
+                                span.sr-only Close
+                        .modal-body
+                            block
+                        .modal-footer
+                            button(class='btn btn-'+colorBg,type="button",data-dismiss="modal") Close

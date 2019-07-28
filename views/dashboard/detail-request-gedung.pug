@@ -1,4 +1,5 @@
 extends layouts/_layout.pug
+include modal
 
 block variables
 	- var activePage = 'request-gedung'
@@ -58,16 +59,21 @@ block content
 					.row.d-print-none.mt-2
 						.col-12.text-right
 							if(data.gedung.STATUS ==='PENDING')
-								a.btn.btn-primary.mr-1(href='javascript:window.print();', target='_blank')
+								a.btn.btn-primary.mr-1(href='javascript:window.print();', data-toggle="modal" 
+data-target="#acceptModal")
 									|  Accept 
-								a.btn.btn-danger.mr-1(href='javascript:window.print();', target='_blank')
+								a.btn.btn-danger.mr-1(href='javascript:window.print();',  data-toggle="modal" 
+data-target="#declineModal")
 									|  Decline
-								a.btn.btn-warning(href='javascript:window.print();', target='_blank')
+								a.btn.btn-warning(href='javascript:window.print();',  data-toggle="modal" 
+data-target="#revisiModal")
 									|  Revisi
 							else if(data.gedung.STATUS === 'REVISI')
-								a.btn.btn-primary.mr-1(href='javascript:window.print();', target='_blank')
+								a.btn.btn-primary.mr-1(href='javascript:window.print();', data-toggle="modal" 
+data-target="#acceptModal")
 									|  Accept 
-								a.btn.btn-danger.mr-1(href='javascript:window.print();', target='_blank')
+								a.btn.btn-danger.mr-1(href='javascript:window.print();', data-toggle="modal" 
+data-target="#declineModal")
 									|  Decline
 								
 	.tile.mb-04
@@ -76,3 +82,7 @@ block content
 				.col-lg-4
 					.bs-component
 						img.img-thumbnail(src=img.PATH, alt='Card image')
+
+	+modal('Accept', 'acceptModal', 'primary')
+	+modal('Decline', 'declineModal', 'danger')
+	+modal('Revisi', 'revisiModal', 'warning')

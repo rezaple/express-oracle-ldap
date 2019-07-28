@@ -46,7 +46,7 @@ block content
 									td #{lahan.STATUS}
 									td #{moment(lahan.EPOCH).format('DD-MM-YYYY')}
 									td 
-										a.btn.btn-info.btn-sm(href=baseUrl+`request-lahan/${lahan.ID}`) Detail
+										a.btn.btn-info.btn-sm(href=`${baseUrl}/request-gedung/${lahan.ID}`) Detail
 				.text-right
 					if(paginator.limit > paginator.total_count)
 						span.text-muted.mr-2 Menampilkan semua data
