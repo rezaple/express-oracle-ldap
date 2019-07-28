@@ -28,34 +28,38 @@ block content
 	.row
 		.col-md-12
 			.tile
+				- if (messages.success)
+					.alert.alert-success.alert-dismissable
+						button.close(type='button', data-dismiss='alert', aria-hidden='true') × 
+						| #{messages.success}
+				- if (messages.error)
+					.alert.alert-danger.alert-dismissable
+						button.close(type='button', data-dismiss='alert', aria-hidden='true') × 
+						| #{messages.error}
 				section.invoice
 					.row
-						#map
-					.row.invoice-info.mt-3
 						.col-12
 							address
-								.alert.alert-info.alert-dismissible.fade.show(role='alert')
-									|  Tipe request gedung adalah 
-									strong #{(data.gedung.ID_GEDUNG)?'Edit':'Insert'}
-									button.close(type='button', data-dismiss='alert', aria-label='Close')
-										span(aria-hidden='true') ×
- 
-								h4 #{data.gedung.NAMA}
+								h4 #{_.startCase(_.toLower(data.gedung.NAMA))} 
 								| #{_.startCase(_.toLower(data.gedung.ALAMAT))}
 								br
 								if(data.gedung.STATUS ==='PENDING')
 									h5
-										span.badge.badge-info #{_.capitalize(data.gedung.STATUS)}
+										span.badge.badge-info.mr-1 #{_.capitalize(data.gedung.STATUS)}
+										span.badge.badge-dark #{(data.gedung.ID_GEDUNG)?'Edit':'Insert'}     
 								else if(data.gedung.STATUS === 'DECLINE')
 									h5
-										span.badge.badge-danger #{_.capitalize(data.gedung.STATUS)}
+										span.badge.badge-danger.mr-1 #{_.capitalize(data.gedung.STATUS)}
+										span.badge.badge-dark #{(data.gedung.ID_GEDUNG)?'Edit':'Insert'}
 								else if(data.gedung.STATUS === 'REVISI')
 									h5
-										span.badge.badge-warning #{_.capitalize(data.gedung.STATUS)}
+										span.badge.badge-warning.mr-1 #{_.capitalize(data.gedung.STATUS)}
+										span.badge.badge-dark #{(data.gedung.ID_GEDUNG)?'Edit':'Insert'}
 								else if(data.gedung.STATUS === 'ACCEPT')
 									h5
-										span.badge.badge-success #{_.capitalize(data.gedung.STATUS)}
-
+										span.badge.badge-success.mr-1 #{_.capitalize(data.gedung.STATUS)}
+										span.badge.badge-dark #{(data.gedung.ID_GEDUNG)?'Edit':'Insert'} 
+								
 					.row.d-print-none.mt-2
 						.col-12.text-right
 							if(data.gedung.STATUS ==='PENDING')
@@ -77,12 +81,24 @@ data-target="#declineModal")
 									|  Decline
 								
 	.tile.mb-04
+		h4 Gambar
 		.row
 			each img in data.images
 				.col-lg-4
 					.bs-component
 						img.img-thumbnail(src=img.PATH, alt='Card image')
 
-	+modal('Accept', 'acceptModal', 'primary')
-	+modal('Decline', 'declineModal', 'danger')
-	+modal('Revisi', 'revisiModal', 'warning')
+	+modal({
+		title:'Accept', 
+		id:'acceptModal', 
+		classBg:'primary',
+		url:`/request-gedung/${data.gedung.ID_REQUEST}/accept`
+	}) Anda yakin menerima request ini?
+	+modal({
+		title:'Decline', 
+		id:'declineModal', 
+		classBg:'danger',
+		url:`/request-gedung/${data.gedung.ID_REQUEST}/decline`
+	}) Anda yakin menolak request ini?
+	+modal({ title:'Revisi', id:'revisiModal', classBg:'warning', url:`/request-gedung/${data.gedung.ID_REQUEST}/revisi`}) Berikan keterangan jika request ini harus direvisi.
+		+textarea('notes')

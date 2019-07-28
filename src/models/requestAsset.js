@@ -700,6 +700,123 @@ async function deleteImage(context){
   return false;
 }
 
+//mindahin gambar
+//midahindata ke la lahan dan gis bangunan master
+async function acceptRequestLahan({id, update_by, updated_date}){
+  const result =  await database.simpleExecute(`UPDATE LA_REQUEST_LAHAN
+    SET STATUS_REQUEST = 'ACCEPT',
+    UPDATE_BY = :update_by, 
+    UPDATE_DATE = TO_DATE(:updated_date, 'yyyy/mm/dd hh24:mi:ss')
+    WHERE ID= :id`, {
+      id,
+      update_by,
+      updated_date,
+  });
+  if (result.rowsAffected && result.rowsAffected === 1) {
+    return true;
+  } 
+
+  throw createError(404, 'Lahan tidak ditemukan!') 
+
+}
+
+async function declineRequestLahan({id, update_by, updated_date}){
+  const result =  await database.simpleExecute(`UPDATE LA_REQUEST_LAHAN
+    SET STATUS_REQUEST = 'DECLINE',
+    UPDATE_BY = :update_by, 
+    UPDATE_DATE = TO_DATE(:updated_date, 'yyyy/mm/dd hh24:mi:ss')
+    WHERE ID= :id`, {
+      id,
+      update_by,
+      updated_date,
+  });
+  if (result.rowsAffected && result.rowsAffected === 1) {
+    return true;
+  } 
+
+  throw createError(404, 'Lahan tidak ditemukan!') 
+}
+
+async function revisiRequestLahan({id, update_by, updated_date, note}){
+  const result =  await database.simpleExecute(`UPDATE LA_REQUEST_LAHAN
+    SET STATUS_REQUEST = 'REVISI',
+    UPDATE_BY = :update_by, 
+    UPDATE_DATE = TO_DATE(:updated_date, 'yyyy/mm/dd hh24:mi:ss'),
+    NOTES= :note
+    WHERE ID= :id`, {
+      id,
+      update_by,
+      updated_date,
+      note
+  });
+  if (result.rowsAffected && result.rowsAffected === 1) {
+    return true;
+  } 
+
+  throw createError(404, 'Lahan tidak ditemukan!') 
+}
+
+
+//cek id apakah statusnya masih pending/revisi
+//update status request
+
+//beres
+async function acceptRequestGedung({id, update_by, updated_date}){
+    const result =  await database.simpleExecute(`UPDATE LA_REQUEST_GEDUNG
+      SET STATUS_REQUEST = 'ACCEPT',
+      UPDATE_BY = :update_by, 
+      UPDATE_DATE = TO_DATE(:updated_date, 'yyyy/mm/dd hh24:mi:ss')
+      WHERE ID= :id`, {
+        id,
+        update_by,
+        updated_date,
+    });
+    if (result.rowsAffected && result.rowsAffected === 1) {
+      //update gedung yang berhub / insert gedung baru
+      //pindahin gambar ke LA_ATT?
+      return true;
+    } 
+
+    throw createError(404, 'Gedung tidak ditemukan!') 
+  
+}
+
+async function declineRequestGedung({id, update_by, updated_date}){
+  const result =  await database.simpleExecute(`UPDATE LA_REQUEST_GEDUNG
+    SET STATUS_REQUEST = 'DECLINE',
+    UPDATE_BY = :update_by, 
+    UPDATE_DATE = TO_DATE(:updated_date, 'yyyy/mm/dd hh24:mi:ss')
+    WHERE ID= :id`, {
+      id,
+      update_by,
+      updated_date,
+  });
+  if (result.rowsAffected && result.rowsAffected === 1) {
+    return true;
+  } 
+
+  throw createError(404, 'Gedung tidak ditemukan!') 
+}
+
+async function revisiRequestGedung({id, update_by, updated_date, note}){
+  const result =  await database.simpleExecute(`UPDATE LA_REQUEST_GEDUNG
+    SET STATUS_REQUEST = 'REVISI',
+    UPDATE_BY = :update_by, 
+    UPDATE_DATE = TO_DATE(:updated_date, 'yyyy/mm/dd hh24:mi:ss'),
+    NOTES= :note
+    WHERE ID= :id`, {
+      id,
+      update_by,
+      updated_date,
+      note
+  });
+  if (result.rowsAffected && result.rowsAffected === 1) {
+    return true;
+  } 
+
+  throw createError(404, 'Gedung tidak ditemukan!') 
+}
+
 module.exports={
   getList,
   getRequestGedung,
@@ -714,5 +831,11 @@ module.exports={
   updateGedung,
   uploadGedung,
   uploadLahan,
-  deleteImage
+  deleteImage,
+  acceptRequestGedung,
+  declineRequestGedung,
+  revisiRequestGedung,
+  acceptRequestLahan,
+  declineRequestLahan,
+  revisiRequestLahan
 };

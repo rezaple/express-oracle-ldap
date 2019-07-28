@@ -38,6 +38,14 @@ router.get('/request-lahan/:id', dashboard.showDetailRequestLahan);
 router.get('/request-gedung', dashboard.showRequestGedung);
 router.get('/request-gedung/:id', dashboard.showDetailRequestGedung);
 
+router.post('/request-gedung/:id/accept', dashboard.acceptRequestGedung);
+router.post('/request-gedung/:id/decline', dashboard.declineRequestGedung);
+router.post('/request-gedung/:id/revisi', dashboard.revisiRequestGedung);
+
+router.post('/request-lahan/:id/accept', dashboard.acceptRequestLahan);
+router.post('/request-lahan/:id/decline', dashboard.declineRequestLahan);
+router.post('/request-lahan/:id/revisi', dashboard.revisiRequestLahan);
+
 router.get('/:page', function(req, res){
       res.render(`dashboard/${req.params.page}`)
 });

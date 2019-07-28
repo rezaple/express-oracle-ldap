@@ -1,4 +1,5 @@
 extends layouts/_layout.pug
+include modal
 
 block variables
 	- var activePage = 'request-lahan'
@@ -32,45 +33,48 @@ block content
 						#map
 					.row.invoice-info.mt-3
 						.col-12
-							address
-								.alert.alert-info.alert-dismissible.fade.show(role='alert')
-									|  Tipe request lahan adalah 
-									strong #{(data.lahan.ID_LAHAN)?'Edit':'Insert'}
-									button.close(type='button', data-dismiss='alert', aria-label='Close')
-										span(aria-hidden='true') ×
- 
-								h4 #{data.lahan.NAMA}
+							address 
+								h4 #{_.startCase(_.toLower(data.lahan.NAMA))}
 								| #{_.startCase(_.toLower(data.lahan.ALAMAT))}
 								br
 								if(data.lahan.STATUS ==='PENDING')
 									h5
-										span.badge.badge-info #{_.capitalize(data.lahan.STATUS)}
+										span.badge.badge-info.mr-1 #{_.capitalize(data.lahan.STATUS)}
+										span.badge.badge-dark #{(data.lahan.ID_GEDUNG)?'Edit':'Insert'} 
 								else if(data.lahan.STATUS === 'DECLINE')
 									h5
-										span.badge.badge-danger #{_.capitalize(data.lahan.STATUS)}
+										span.badge.badge-danger.mr-1 #{_.capitalize(data.lahan.STATUS)}
+										span.badge.badge-dark #{(data.lahan.ID_GEDUNG)?'Edit':'Insert'} 
 								else if(data.lahan.STATUS === 'REVISI')
 									h5
-										span.badge.badge-warning #{_.capitalize(data.lahan.STATUS)}
+										span.badge.badge-warning.mr-1 #{_.capitalize(data.lahan.STATUS)}
+										span.badge.badge-dark #{(data.lahan.ID_GEDUNG)?'Edit':'Insert'} 
 								else if(data.lahan.STATUS === 'ACCEPT')
 									h5
-										span.badge.badge-success #{_.capitalize(data.lahan.STATUS)}
+										span.badge.badge-success.mr-1 #{_.capitalize(data.lahan.STATUS)}
+										span.badge.badge-dark #{(data.lahan.ID_GEDUNG)?'Edit':'Insert'} 
 
 					.row.d-print-none.mt-2
 						.col-12.text-right
 							if(data.lahan.STATUS ==='PENDING')
-								a.btn.btn-primary.mr-1(href='javascript:window.print();', target='_blank')
+								a.btn.btn-primary.mr-1(href='javascript:window.print();', data-toggle="modal" 
+data-target="#acceptModal")
 									|  Accept 
-								a.btn.btn-danger.mr-1(href='javascript:window.print();', target='_blank')
+								a.btn.btn-danger.mr-1(href='javascript:window.print();',  data-toggle="modal" 
+data-target="#declineModal")
 									|  Decline
-								a.btn.btn-warning(href='javascript:window.print();', target='_blank')
+								a.btn.btn-warning(href='javascript:window.print();',  data-toggle="modal" 
+data-target="#revisiModal")
 									|  Revisi
 							else if(data.lahan.STATUS === 'REVISI')
-								a.btn.btn-primary.mr-1(href='javascript:window.print();', target='_blank')
+								a.btn.btn-primary.mr-1(href='javascript:window.print();', data-toggle="modal" 
+data-target="#acceptModal")
 									|  Accept 
-								a.btn.btn-danger.mr-1(href='javascript:window.print();', target='_blank')
+								a.btn.btn-danger.mr-1(href='javascript:window.print();', data-toggle="modal" 
+data-target="#declineModal")
 									|  Decline
-								
 	.tile.mb-04
+		h4 Gambar
 		.row
 			each img in data.images
 				.col-lg-4
@@ -78,6 +82,7 @@ block content
 						img.img-thumbnail(src=img.PATH, alt='Card image')
 							
 	.tile.mb-04
+		h4 Gedung
 		.row
 			each gedung in data.gedung
 				.col-lg-4
@@ -90,6 +95,20 @@ block content
 								p.card-text
 									| #{gedung.ALAMAT}
 								a.card-link(href=baseUrl+'/request-gedung/'+gedung.ID) Detail
+	+modal({
+		title:'Accept', 
+		id:'acceptModal', 
+		classBg:'primary',
+		url:`/request-lahan/${data.lahan.ID_REQUEST}/accept`
+	}) Anda yakin menerima request ini?
+	+modal({
+		title:'Decline', 
+		id:'declineModal', 
+		classBg:'danger',
+		url:`/request-lahan/${data.lahan.ID_REQUEST}/decline`
+	}) Anda yakin menolak request ini?
+	+modal({ title:'Revisi', id:'revisiModal', classBg:'warning', url:`/request-lahan/${data.lahan.ID_REQUEST}/revisi`}) Berikan keterangan jika request ini harus direvisi.
+		+textarea('notes')
 
 
 block specific-js

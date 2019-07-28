@@ -7,6 +7,13 @@ const summary = require('../models/summary');
 const requestAsset = require('../models/requestAsset');
 const {baseUrl} = require('../config/web-server.js');
 
+
+function getDate(){
+  var date = new Date()
+  date.setHours(date.getHours() + 7);
+  return date.toISOString().replace(/T/, ' ').replace(/\..+/, '');
+}
+
 function load_data(file) {
 	var wb = XLSX.readFile(file);
 	/* generate array of arrays */
@@ -214,6 +221,132 @@ async function uploadNKA2(req, res, next) {
   }
 }
 
+async function acceptRequestLahan(req, res, next){
+  if (req.session.loggedin) {
+    try{
+      const context = {
+        id: parseInt(req.params.id, 10),
+        update_by: req.session.username,
+        updated_date:getDate()
+      }
+      const result = await requestAsset.acceptRequestLahan(context)
+      req.flash('success', `Sukses menerima request.`);
+      return res.redirect(baseUrl+'/request-lahan/'+context.id)
+    }catch (err) {
+      const id= parseInt(req.params.id, 10)
+      req.flash('error', `Maaf, terjadi kesalahan di server <${err.message}>`);
+      return res.redirect(baseUrl+'/request-lahan/'+id)
+    }
+  }
+  redirectToLogin(req, res)
+}
+
+async function declineRequestLahan(req, res, next){
+  if (req.session.loggedin) {
+    try{
+      const context = {
+        id: parseInt(req.params.id, 10),
+        update_by: req.session.username,
+        updated_date:getDate()
+      }
+      const result = await requestAsset.declineRequestLahan(context)
+      req.flash('success', `Sukses menolak request.`);
+      return res.redirect(baseUrl+'/request-lahan/'+context.id)
+    }catch (err) {
+      const id= parseInt(req.params.id, 10)
+      req.flash('error', `Maaf, terjadi kesalahan di server <${err.message}>`);
+      return res.redirect(baseUrl+'/request-lahan/'+id)
+    }
+  }
+  redirectToLogin(req, res)
+}
+
+async function revisiRequestLahan(req, res, next){
+  if (req.session.loggedin) {
+    try{
+      const context = {
+        id: parseInt(req.params.id, 10),
+        note: req.body.notes||"",
+        update_by: req.session.username,
+        updated_date:getDate()
+      }
+      const result = await requestAsset.revisiRequestLahan(context)
+      req.flash('success', `Sukses merevisi request.`);
+      return res.redirect(baseUrl+'/request-lahan/'+context.id)
+    }catch (err) {
+      const id= parseInt(req.params.id, 10)
+      req.flash('error', `Maaf, terjadi kesalahan di server <${err.message}>`);
+      return res.redirect(baseUrl+'/request-lahan/'+id)
+    }
+  }
+  redirectToLogin(req, res)
+}
+
+
+
+
+async function acceptRequestGedung(req, res, next){
+  if (req.session.loggedin) {
+    try{
+      const context = {
+        id: parseInt(req.params.id, 10),
+        update_by: req.session.username,
+        updated_date:getDate()
+      }
+      const result = await requestAsset.acceptRequestGedung(context)
+      req.flash('success', `Sukses menerima request.`);
+      return res.redirect(baseUrl+'/request-gedung/'+context.id)
+    }catch (err) {
+      const id= parseInt(req.params.id, 10)
+      req.flash('error', `Maaf, terjadi kesalahan di server <${err.message}>`);
+      return res.redirect(baseUrl+'/request-gedung/'+id)
+    }
+  }
+  redirectToLogin(req, res)
+}
+
+async function declineRequestGedung(req, res, next){
+  if (req.session.loggedin) {
+    try{
+      const context = {
+        id: parseInt(req.params.id, 10),
+        update_by: req.session.username,
+        updated_date:getDate()
+      }
+      const result = await requestAsset.declineRequestGedung(context)
+      req.flash('success', `Sukses menolak request.`);
+      return res.redirect(baseUrl+'/request-gedung/'+context.id)
+    }catch (err) {
+      const id= parseInt(req.params.id, 10)
+      req.flash('error', `Maaf, terjadi kesalahan di server <${err.message}>`);
+      return res.redirect(baseUrl+'/request-gedung/'+id)
+    }
+  }
+  redirectToLogin(req, res)
+}
+
+async function revisiRequestGedung(req, res, next){
+  if (req.session.loggedin) {
+    try{
+      const context = {
+        id: parseInt(req.params.id, 10),
+        note: req.body.notes||"",
+        update_by: req.session.username,
+        updated_date:getDate()
+      }
+      const result = await requestAsset.revisiRequestGedung(context)
+      req.flash('success', `Sukses merevisi request.`);
+      return res.redirect(baseUrl+'/request-gedung/'+context.id)
+    }catch (err) {
+      const id= parseInt(req.params.id, 10)
+      req.flash('error', `Maaf, terjadi kesalahan di server <${err.message}>`);
+      return res.redirect(baseUrl+'/request-gedung/'+id)
+    }
+  }
+  redirectToLogin(req, res)
+}
+
+
 module.exports = {
   uploadNKA2,
   uploadNKA,
@@ -226,5 +359,11 @@ module.exports = {
   showRequestGedung,
   showDetailRequestGedung,
   login,
-  logout
+  logout,
+  revisiRequestGedung,
+  acceptRequestGedung,
+  declineRequestGedung,
+  revisiRequestLahan,
+  acceptRequestLahan,
+  declineRequestLahan
 }

@@ -40,10 +40,24 @@ block content
 							each lahan in data
 								tr
 									td
-									td #{lahan.NAMA}
-									td #{lahan.ALAMAT}
-									td #{lahan.TYPE}
-									td #{lahan.STATUS}
+									td(width='30%') #{lahan.NAMA}
+									td(width='30%') #{lahan.ALAMAT}
+									td 
+										h5
+											span.badge.badge-dark #{lahan.TYPE}
+									td 
+										if(lahan.STATUS ==='PENDING')
+											h5
+												span.badge.badge-info #{_.capitalize(lahan.STATUS)}
+										else if(lahan.STATUS === 'DECLINE')
+											h5
+												span.badge.badge-danger #{_.capitalize(lahan.STATUS)}
+										else if(lahan.STATUS === 'REVISI')
+											h5
+												span.badge.badge-warning #{_.capitalize(lahan.STATUS)}
+										else if(lahan.STATUS === 'ACCEPT')
+											h5
+												span.badge.badge-success #{_.capitalize(lahan.STATUS)}
 									td #{moment(lahan.EPOCH).format('DD-MM-YYYY')}
 									td 
 										a.btn.btn-info.btn-sm(href=`${baseUrl}/request-lahan/${lahan.ID}`) Detail
