@@ -476,6 +476,7 @@ async function updateGedung(req, id){
   const reqGedung = await database.simpleExecute(`SELECT ID, IDGEDUNG, ID_REQUEST_LAHAN, ALAMAT, COOR_Y, COOR_X from LA_REQUEST_GEDUNG WHERE ID= :id AND REQUEST_BY = :request_by AND STATUS_REQUEST IN ('PENDING','REVISI')`, {id:id, request_by:data.request_by})
 
   if(reqGedung.rows.length > 0 && reqGedung.rows[0].ID_REQUEST_LAHAN!==null){
+    //return 'how';
     const reqLahan = await database.simpleExecute(`SELECT ID,ALAMAT, COOR_X, COOR_Y from LA_REQUEST_LAHAN WHERE ID= :id AND REQUEST_BY = :request_by`, {id:reqGedung.rows[0].ID_REQUEST_LAHAN, request_by:data.request_by})
     if(reqLahan.rows.length > 0){
       const update = await updateRequestGedung(data,reqLahan.rows[0],id)
@@ -485,9 +486,9 @@ async function updateGedung(req, id){
 
   if(reqGedung.rows.length > 0 && reqGedung.rows[0].IDGEDUNG!==null){
     const update = await updateRequestGedung(data,{
-      alamat:reqGedung.rows[0].ALAMAT,
-      coor_x:reqGedung.rows[0].COOR_X,
-      coor_y:reqGedung.rows[0].COOR_Y
+      ALAMAT:reqGedung.rows[0].ALAMAT,
+      COOR_X:reqGedung.rows[0].COOR_X,
+      COOR_Y:reqGedung.rows[0].COOR_Y
     },id)
     return update;
   }
@@ -503,9 +504,9 @@ async function updateRequestGedung(data, dataLahan, id) {
   WHERE ID= :id`, {
     id:id,
     nama:data.nama,
-    alamat:dataLahan.alamat,
-    coor_x:dataLahan.coor_x,
-    coor_y:dataLahan.coor_y
+    alamat:dataLahan.ALAMAT,
+    coor_x:dataLahan.COOR_X,
+    coor_y:dataLahan.COOR_Y
   });
 
   if (result.rowsAffected && result.rowsAffected === 1) {
