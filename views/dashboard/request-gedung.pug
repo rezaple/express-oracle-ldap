@@ -49,12 +49,16 @@ block content
 										a.btn.btn-info.btn-sm(href=`${baseUrl}/request-gedung/${lahan.ID}`) Detail
 				.text-right
 					if(paginator.limit > paginator.total_count)
-						span.text-muted.mr-2 Menampilkan semua data
+						span.text-muted.mr-2 
+							| Menampilkan semua data
+							| #{paginator.first_page}
 					else 
-						span.text-muted.mr-2 Menampilkan 1-#{paginator.limit} dari #{paginator.total_count}
+						span.text-muted.mr-2 
+							| Menampilkan 1-#{paginator.limit} dari #{paginator.total_count}
 						
 						.btn-group
-							button.btn.btn-primary.btn-sm(type='button')
+							a.btn.btn-primary.btn-sm(href=paginator.prev_page)
 								i.fa.fa-chevron-left
-							button.btn.btn-primary.btn-sm(type='button')
+							a.btn.btn-primary.btn-sm(href=paginator.next_page)
 								i.fa.fa-chevron-right
+

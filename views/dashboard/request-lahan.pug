@@ -54,7 +54,7 @@ block content
 						span.text-muted.mr-2 Menampilkan 1-#{paginator.limit} dari #{paginator.total_count}
 						
 						.btn-group
-							button.btn.btn-primary.btn-sm(type='button')
+							a.btn.btn-primary.btn-sm(href=paginator.prev_page)
 								i.fa.fa-chevron-left
-							button.btn.btn-primary.btn-sm(type='button')
+							a.btn.btn-primary.btn-sm(href=paginator.next_page)
 								i.fa.fa-chevron-right
