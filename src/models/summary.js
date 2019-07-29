@@ -179,7 +179,7 @@ async function getStatusTanah()
     count(case when d.SKHAK = 'HP' AND d.TANGGAL_AKHIR > TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD')  then 1 end) HP,
     count(case when d.SKHAK = 'HM' AND d.TANGGAL_AKHIR > TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD')  then 1 end) HM,
     count(case when d.TANGGAL_AKHIR < TO_DATE('${tahunJatuhTempo}','YYYY-MM-DD') then 1 end) JATUH_TEMPO,
-    count(case when d.SKHAK IS NULL then 1 end) TIDAK_BERSERTIFKAT
+    count(case when d.SKHAK IS NULL then 1 end) TIDAK_BERSERTIFIKAT
     FROM GIS_LAHAN_MASTER a 
     LEFT JOIN LA_SERTIPIKAT_BARU d on TO_CHAR(d.IDAREAL) = TO_CHAR(a.IDAREAL)`;
 
