@@ -713,6 +713,10 @@ async function acceptRequestLahan({id, update_by, updated_date}){
       updated_date,
   });
   if (result.rowsAffected && result.rowsAffected === 1) {
+    //accept semua gedung
+    //mindahin gambar gedung
+
+    //mindahin gambar lahan da 
     return true;
   } 
 

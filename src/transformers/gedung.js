@@ -105,24 +105,21 @@ function transformNKAGedung(data){
 function transformTenantGedung(data){
     return {
         ID: parseInt(data.ID),
-        NAMA_TENANT: data.NAMA_TENANT?data.NAMA_TENANT:"",
-        PERUNTUKAN: data.PERUNTUKAN?data.PERUNTUKAN:"",
-        NO_KONTRAK: data.NO_KONTRAK?data.NO_KONTRAK:"",
-        LUAS_KONTRAK: data.NET_AREA?parseInt(data.NET_AREA,10):0,
-        BASE_RENT: {
-            HARGA_PER_BULAN:data.HARGA_BR_PER_BULAN?parseInt(data.HARGA_BR_PER_BULAN,10):0,
-            JUMLAH_PER_BULAN:data.JUMLAH_BR_PER_BULAN?parseInt(data.JUMLAH_BR_PER_BULAN,10):0,
-            JUMLAH_PER_TAHUN:data.JUMLAH_BR_PER_TAHUN?parseInt(data.JUMLAH_BR_PER_TAHUN,10):0,
+        NAMA_TENANT: data.NAMA_TENANT||"",
+        NO_KONTRAK: data.NO_KONTRAK||"",
+        SKEMA_KONTRAK: data.SKEMA_KONTRAK||"",
+        PERUNTUKAN: data.PERUNTUKAN||"",
+        LUAS_KONTRAK: {
+            BASE_RENT: data.LUAS_KONTRAK_BR?parseFloat(data.LUAS_KONTRAK_BR):0,
+            SERVICE_CHARGE: data.LUAS_KONTRAK_SC?parseFloat(data.LUAS_KONTRAK_SC):0,
         },
-        SERVICE_CHARGE: {
-            HARGA_PER_BULAN:data.HARGA_SC_PER_BULAN?parseInt(data.HARGA_SC_PER_BULAN,10):0,
-            JUMLAH_PER_BULAN:data.JUMLAH_SC_PER_BULAN?parseInt(data.JUMLAH_SC_PER_BULAN,10):0,
-            JUMLAH_PER_TAHUN:data.JUMLAH_SC_PER_TAHUN?parseInt(data.JUMLAH_SC_PER_TAHUN,10):0,
-        },
-        SKEMA_KONTRAK: data.CARA_PEMBAYARAN?data.CARA_PEMBAYARAN:"",
-        STATUS_KONTRAK: data.IS_REQUEST==='f'?'Non Active':'Active',
-        START_DATE:data.MULAI_KONTRAK?new Date(data.MULAI_KONTRAK).getTime():"",
-        END_DATE:data.AKHIR_KONTRAK?new Date(data.AKHIR_KONTRAK).getTime():""
+        SATUAN: data.SATUAN || "",
+        BASE_RENT: data.BASE_RENT?parseFloat(data.BASE_RENT):0,
+        SERVICE_CHARGE: data.SERVICE_CHARGE?parseFloat(data.SERVICE_CHARGE):0,
+        STATUS_KONTRAK: data.STATUS_KONTRAK||"",
+        START_DATE:data.START_DATE?new Date(data.START_DATE).getTime():"",
+        END_DATE:data.END_DATE?new Date(data.END_DATE).getTime():"",
+        REVENUE: data.REVENUE?parseFloat(data.REVENUE):0
     }
 }
 
@@ -134,6 +131,17 @@ function transformTagihanListrik(data){
         TANGGAL: data.TANGGAL?data.TANGGAL:"",
         JUMLAH_PEMAKAIAN: data.JUMLAH_PEMAKAIAN?parseInt(data.JUMLAH_PEMAKAIAN,10):0,
         BIAYA_LISTRIK: data.BIAYA_LISTRIK?parseInt(data.BIAYA_LISTRIK,10):0
+    }
+}
+
+function transformDocOtherGedung(data){
+    const baseURI = data.SERV?'http://mrra.telkom.co.id/gis/assets':'http://10.60.164.5/myassist/assets'
+    return {
+        ID: parseInt(data.ID,10),
+        JENIS_DOKUMEN: data.JENIS_DOKUMEN || "",
+        NO_DOKUMEN: data.NO_DOKUMEN || "",
+        KETERANGAN: data.KETERANGAN || "",
+        PATH: data.PATH_FILE? baseURI+data.PATH_FILE:"",
     }
 }
 
@@ -157,5 +165,6 @@ module.exports = {
     transformNKAGedung,
     transformTagihanListrik,
     transformTagihanAir,
-    transformTenantGedung
+    transformTenantGedung,
+    transformDocOtherGedung
 }

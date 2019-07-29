@@ -183,8 +183,13 @@ async function getDetail(params, idGedung)
     let resTagihanAir = await database.simpleExecute(`SELECT t.* FROM LA_AIR t JOIN (SELECT IDGEDUNG, MAX(TANGGAL) AS TANGGAL FROM LA_AIR WHERE IDGEDUNG= :ID_GEDUNG GROUP BY IDGEDUNG ) m ON  m.IDGEDUNG = t.IDGEDUNG AND m.TANGGAL = t.TANGGAL WHERE ROWNUM=1`, {ID_GEDUNG: idGedung});
     result.air =  resTagihanAir.rows.length > 0 ? resTagihanAir.rows.map(air=>transform.transformTagihanAir(air) ): [];
 
-    let resTenant = await database.simpleExecute(`SELECT * FROM LA_TENANT WHERE IDGEDUNG = :ID_GEDUNG`, {ID_GEDUNG: idGedung});
+    let resTenant = await database.simpleExecute(`SELECT * FROM LA_TENANT_BARU WHERE IDGEDUNG = :ID_GEDUNG`, {ID_GEDUNG: idGedung});
     result.tenant =  resTenant.rows.length > 0 ? resTenant.rows.map(tenant=>transform.transformTenantGedung(tenant)) : [];
+
+    // let resDocOthers = await database.simpleExecute(`SELECT * FROM LA_DOCUMENT_OTHER a
+    // LEFT OUTER JOIN (SELECT ID_DOCUMENT, MAX(FILE_PATH) PATH_FILE, MAX(SERVER) SERV
+	// 		FROM LA_ATT_DOCUMENT_OTHER GROUP BY ID_DOCUMENT ) b ON a.ID = b.ID_DOCUMENT  WHERE IDGEDUNG = :ID_GEDUNG`, {ID_GEDUNG: idGedung});
+    // result.dokumen_lainnya =  resDocOthers.rows.length > 0 ? resDocOthers.rows.map(doc=>transform.transformDocOtherGedung(doc)) : [];
 
     return result;
 }

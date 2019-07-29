@@ -23,6 +23,17 @@ function transformList(lahan){
     }
 }
 
+function transformDocOtherGedung(data){
+    const baseURI = data.SERV?'http://mrra.telkom.co.id/gis/assets':'http://10.60.164.5/myassist/assets'
+    return {
+        ID: parseInt(data.ID,10),
+        JENIS_DOKUMEN: data.JENIS_DOKUMEN || "",
+        NO_DOKUMEN: data.NO_DOKUMEN || "",
+        KETERANGAN: data.KETERANGAN || "",
+        PATH: data.PATH_FILE? baseURI+data.PATH_FILE:"",
+    }
+}
+
 function transformListGedung(data){
     return {
         IDGEDUNG: parseInt(data.IDGEDUNG,10),
@@ -177,5 +188,6 @@ module.exports = {
     transformSertifikatLahan,
     transformAttSertifikatLahan,
     transformImageLahan,
-    transformLahanMaster
+    transformLahanMaster,
+    transformDocOtherGedung
 }

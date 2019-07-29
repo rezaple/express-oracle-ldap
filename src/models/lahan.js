@@ -249,6 +249,17 @@ async function getDetail(params, idAreal)
              WHERE a.IDAREAL = :ID_AREAL GROUP BY a.IDGEDUNG, a.IDAREAL, a.COOR_X, a.COOR_Y, a.NAMA_GEDUNG, a.ALAMAT, a.LUAS_BANGUNAN, a.JUMLAH_LANTAI, a.SALEABLE_AREA, a.PATH_GEDUNG_IMAGE`,{ID_AREAL: idAreal});
     result.list_gedung = resGedung.rows.length > 0 ? resGedung.rows.map(gedung=>transform.transformListGedung(gedung)) : [];
 
+    if(resGedung.rows.length > 0){
+        const docPromises = resGedung.rows.map(async gedung=>{
+            const resDocOther = await database.simpleExecute(`SELECT * FROM LA_DOCUMENT_OTHER a
+            LEFT OUTER JOIN (SELECT ID_DOCUMENT, MAX(FILE_PATH) PATH_FILE, MAX(SERVER) SERV
+                    FROM LA_ATT_DOCUMENT_OTHER GROUP BY ID_DOCUMENT ) b ON a.ID = b.ID_DOCUMENT  WHERE IDGEDUNG = :ID_GEDUNG`, {ID_GEDUNG: gedung.IDGEDUNG});
+            return resDocOther.rows.map(doc=>transform.transformDocOtherGedung(doc))
+        }) ;
+        const docOther = await Promise.all(docPromises)
+        result.dokumen_lainnya= docOther.length > 0?docOther.reduce((acc, val) => acc.concat(val), []):[];
+    }
+    
     return result;
 }
 
