@@ -1,6 +1,7 @@
 const database = require('../services/database.js');
 const transform = require('../transformers/lahan.js');
 const url = require('url');
+const createError = require('http-errors');
 
 async function getAll(req)
 {
@@ -205,7 +206,10 @@ async function getDetail(params, idAreal)
     left join LA_REF_ANALISIS_SCORE_KLAS c on TO_NUMBER(b.\"KLASIFIKASI\") = c.\"ID\" 
     left join LA_REF_STATUS_KEPEMILIKAN h on a.STATUS_KEPEMILIKAN = h.ID
     WHERE TO_CHAR(a.\"IDAREAL\") = '${idAreal}' AND ROWNUM <= 1`, {});
-    res.rows.length > 0 ? result.lahan_master =res.rows.reduce((acc, lahan)=>transform.transformLahanMaster(lahan),0):"";
+    if(res.rows.length < 1){
+        throw  createError(404, 'Lahan tidak ditemukan!')
+    }
+    result.lahan_master =res.rows.reduce((acc, lahan)=>transform.transformLahanMaster(lahan),0)
 
     const resImgLahan = await database.simpleExecute(`SELECT a.*,b.* FROM LA_ATTACHMENT_lahan a INNER JOIN LA_ATTACHMENT b on TO_NUMBER(a.ID_ATTACHMENT) = b.ID WHERE (TO_CHAR(a.IDAREAL)) = ${idAreal} AND TO_CHAR(a.ID_ATTACHMENT_GROUP) = 1 AND ROWNUM <= 3`,{});
     result.img_lahan =  resImgLahan.rows.length > 0 ? resImgLahan.rows.map(img=>transform.transformImageLahan(img)) : [];

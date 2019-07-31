@@ -1,7 +1,7 @@
 const database = require('../services/database.js');
 const transform = require('../transformers/gedung.js');
 const url = require('url');
-const createError = require('http-errors')
+const createError = require('http-errors');
 
 async function getAll(req)
 {

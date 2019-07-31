@@ -30,21 +30,13 @@ async function getDetail(req, res, next) {
   try {
     const idAreal = parseInt(req.params.id, 10);
     const rows = await lahan.getDetail(req.query, idAreal);
-    if(rows.lahan_master===undefined || rows.lahan_master ===""){
-      res.status(404).json({
-        status:404,
-        data:"Not Found",
-      });
-    }else{
       res.status(200).json({
         status:200,
         data:rows,
       });
-    }
-    
   } catch (err) {
-    res.status(500).json({
-      status:500,
+    res.status(err.status || 500).json({
+      status:err.status || 500,
       message:err.message
     });
   }
