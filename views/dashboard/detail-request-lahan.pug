@@ -112,22 +112,20 @@ data-target="#declineModal")
 
 
 block specific-js
-	script(src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCwdyiC2sZ3B1O2nMdhUy6Z0ljoK3gbA_U&callback=initMap")
-	//- script(src="https://maps.googleapis.com/maps/api/js?key=AIzaSyByqLPeK5YiHRXi3kFfhR_vRi_q8aj0VNE&callback=initMap")
-	script(src="https://cdnjs.cloudflare.com/ajax/libs/gmaps.js/0.4.9/gmaps.min.js")
 	script(type='text/javascript').
+		function initMap() {
+			var myLatLng = {lat: #{data.lahan.COOR_Y}, lng: #{data.lahan.COOR_X}};
 
-		var map = new GMaps({
-			div: '#map',
-			lat:  #{data.lahan.COOR_X},
-			lng: #{data.lahan.COOR_Y}
-		});
+			var map = new google.maps.Map(document.getElementById('map'), {
+			zoom: 14,
+			center: myLatLng
+			});
 
-		GMaps.geocode({
-		address: 'Indonesia',
-		callback: function(results, status){
-			var firstResult = results[0];
-			map.setCenter(firstResult.geometry.location.lat(), firstResult.geometry.location.lng());
-			map.setZoom(8);
+			var marker = new google.maps.Marker({
+			position: myLatLng,
+			map: map
+			});
 		}
-		}); 
+
+	script(src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCwdyiC2sZ3B1O2nMdhUy6Z0ljoK3gbA_U&callback=initMap")
+	script(src="https://cdnjs.cloudflare.com/ajax/libs/gmaps.js/0.4.9/gmaps.min.js")

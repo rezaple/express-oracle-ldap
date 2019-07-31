@@ -1,6 +1,7 @@
 const database = require('../services/database.js');
 const transform = require('../transformers/gedung.js');
 const url = require('url');
+const createError = require('http-errors')
 
 async function getAll(req)
 {
@@ -131,7 +132,7 @@ async function getDetail(params, idGedung)
     const lat = (params.lat && params.lat.length>0)? params.lat : -6.230361;
     const long = (params.long && params.long.length>0) ? params.long : 106.816673;
 
-    let res = await database.simpleExecute(`SELECT a.IDGEDUNG,a.IDAREAL,a.NAMA_GEDUNG,b.COOR_X,b.COOR_Y,a.ALAMAT, a.DESA, a.KECAMATAN, a.KOTA, a.PROPINSI, a.TREG, a.WITEL, a.UNIT_GSD,a.IDAREAL,
+    const res = await database.simpleExecute(`SELECT a.IDGEDUNG,a.IDAREAL,a.NAMA_GEDUNG,b.COOR_X,b.COOR_Y,a.ALAMAT, a.DESA, a.KECAMATAN, a.KOTA, a.PROPINSI, a.TREG, a.WITEL, a.UNIT_GSD,a.IDAREAL,
     a.LUAS_BANGUNAN, b.LUAS_LAHAN, a.JUMLAH_LANTAI, a.OCCUPACY_RATE, a.SALEABLE_AREA, a.PATH_GEDUNG_IMAGE,
     ROUND(
         (6371* ACOS(
@@ -146,9 +147,13 @@ async function getDetail(params, idGedung)
     FROM GIS_BANGUNAN_MASTER a 
                     left join LA_LAHAN b on TO_CHAR(a.IDAREAL) = TO_CHAR(b.IDAREAL)
            WHERE TO_CHAR(a.IDGEDUNG) = ${idGedung} AND ROWNUM <= 1`, {});
-    result.gedung_master =  res.rows.length > 0 ? res.rows.reduce((acc, gedung)=>transform.transformGedungMaster(gedung),0) : "";
+    
+    if(res.rows.length < 1){
+        throw  createError(404, 'Gedung tidak ditemukan!')
+    }
+    result.gedung_master = res.rows.reduce((acc, gedung)=>transform.transformGedungMaster(gedung),0)
 
-    const idAreal = result.gedung_master.IDAREAL
+    const idAreal = result.gedung_master.IDAREAL || 0
     const resLahan = await database.simpleExecute(`SELECT DISTINCT(a.IDAREAL), a.COOR_X, a.COOR_Y, a.NAMA_LAHAN, a.ALAMAT, a.LUAS_LAHAN, a.JUMLAH_BANGUNAN, a.GUNA_LAHAN, d.SKHAK, d.TANGGAL_AKHIR, 
                 CASE e.NAMA_KLASIFIKASI
                     WHEN 'PRIMER' then 'Q1'
@@ -170,13 +175,13 @@ async function getDetail(params, idGedung)
     const resImgGedung = await database.simpleExecute(`SELECT a.*,b.* FROM LA_ATTACHMENT_GEDUNG a INNER JOIN LA_ATTACHMENT b on TO_NUMBER(a.ID_ATTACHMENT) = b.ID WHERE (TO_CHAR(a.IDGEDUNG)) = ${idGedung} AND TO_CHAR(a.ID_ATTACHMENT_GROUP) = 1 AND ROWNUM <= 3`,{});
     result.img_gedung =  resImgGedung.rows.length > 0 ? resImgGedung.rows.map(img=>transform.transformImageGedung(img)) : [];
 
-    let resPBB = await database.simpleExecute(`SELECT * FROM LA_PBB_GEDUNG WHERE IDGEDUNG = :ID_GEDUNG`, {ID_GEDUNG: idGedung});
+    const resPBB = await database.simpleExecute(`SELECT * FROM LA_PBB_GEDUNG WHERE IDGEDUNG = :ID_GEDUNG`, {ID_GEDUNG: idGedung});
     result.pbb =  resPBB.rows.length > 0 ? resPBB.rows.map(pbb=>transform.transformPBBGedung(pbb)) : [];
 
-    let resNKA = await database.simpleExecute(`SELECT * FROM LA_NKA_GEDUNG WHERE IDGEDUNG = :ID_GEDUNG`, {ID_GEDUNG: idGedung});
+    const resNKA = await database.simpleExecute(`SELECT * FROM LA_NKA_GEDUNG WHERE IDGEDUNG = :ID_GEDUNG`, {ID_GEDUNG: idGedung});
     result.nka =  resNKA.rows.length > 0 ? resNKA.rows.map(nka=>transform.transformNKAGedung(nka)) : [];
 
-    let resTagihanListrik = await database.simpleExecute(`SELECT t.* FROM LA_LISTRIK_GEDUNG t JOIN ( SELECT IDGEDUNG, MAX(TANGGAL) AS TANGGAL FROM LA_LISTRIK_GEDUNG WHERE IDGEDUNG= :ID_GEDUNG GROUP BY IDGEDUNG ) m
+    const resTagihanListrik = await database.simpleExecute(`SELECT t.* FROM LA_LISTRIK_GEDUNG t JOIN ( SELECT IDGEDUNG, MAX(TANGGAL) AS TANGGAL FROM LA_LISTRIK_GEDUNG WHERE IDGEDUNG= :ID_GEDUNG GROUP BY IDGEDUNG ) m
     ON  m.IDGEDUNG = t.IDGEDUNG AND m.TANGGAL = t.TANGGAL WHERE ROWNUM=1`, {ID_GEDUNG: idGedung});
     result.listrik =  resTagihanListrik.rows.length > 0 ? resTagihanListrik.rows.map(listrik=>transform.transformTagihanListrik(listrik)) : [];
 
@@ -187,7 +192,7 @@ async function getDetail(params, idGedung)
     result.tenant =  resTenant.rows.length > 0 ? resTenant.rows.map(tenant=>transform.transformTenantGedung(tenant)) : [];
 
     const resKtel = await database.simpleExecute(`SELECT * FROM LA_KTEL WHERE IDGEDUNG = :ID_GEDUNG`, {ID_GEDUNG: idGedung});
-    result.ktel =  resKtel.rows.length > 0 ? resKtel.rows.reduce((acc, gedung)=>transform.transformGedungKTEL(gedung),0) : "";
+    resKtel.rows.length > 0 ? result.ktel=resKtel.rows.reduce((acc, gedung)=>transform.transformGedungKTEL(gedung),0) : "";
 
     // let resDocOthers = await database.simpleExecute(`SELECT * FROM LA_DOCUMENT_OTHER a
     // LEFT OUTER JOIN (SELECT ID_DOCUMENT, MAX(FILE_PATH) PATH_FILE, MAX(SERVER) SERV
