@@ -145,6 +145,14 @@ function transformDocOtherGedung(data){
     }
 }
 
+function transformGedungKTEL(data){
+    return {
+        LUAS: parseFloat(data.LUAS) || 0,
+        KELAS_PENGAMANAN: data.KELAS_PENGAMANAN || "",
+        KELAS_PELAYANAN: data.KELAS_PELAYANAN || "",
+    }
+}
+
 function transformTagihanAir(data){
     return {
         ID: parseInt(data.ID,10),
@@ -166,5 +174,6 @@ module.exports = {
     transformTagihanListrik,
     transformTagihanAir,
     transformTenantGedung,
-    transformDocOtherGedung
+    transformDocOtherGedung,
+    transformGedungKTEL
 }

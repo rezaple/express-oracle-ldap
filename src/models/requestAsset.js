@@ -163,8 +163,82 @@ async function getListGedung(nik){
   return transformedListGedung
 }
 
+function getDate(){
+  var date = new Date()
+  date.setHours(date.getHours() + 7);
+  return date.toISOString().replace(/T/, ' ').replace(/\..+/, '');
+}
+
+async function queryGetRequestImages(id, type){
+  const images = await database.simpleExecute(`SELECT ID, FILE_NAME, FILE_PATH from LA_REQUEST_ATTACHMENT WHERE IDREQUEST= :id AND "TYPE" = :type`, {id, type})
+  return images;
+}
+
+async function queryInsertAttachImage(data){
+  const image = Object.assign({}, data);
+
+  image.id = {
+    dir: oracledb.BIND_OUT,
+    type: oracledb.NUMBER
+  }
+
+  const result = await database.simpleExecute(`INSERT INTO VEAT.LA_ATTACHMENT
+      (ID,FILE_NAME, FILE_PATH, BASE_URL, CREATED_DATE)
+      VALUES(ID_GEN(),
+      :file_name,
+      :file_path,
+      :base_url, 
+      TO_DATE(:created_date, 'yyyy-mm-dd hh24:mi:ss')) returning id into :id`, {image}
+  )
+  image.id = result.outBinds.employee_id[0];
+  return image;
+}
+
+async function queryInsertAttachImageGedung(data){
+  const image = Object.assign({}, data);
+
+  image.id = {
+    dir: oracledb.BIND_OUT,
+    type: oracledb.NUMBER
+  }
+  image.id_attachment_group=1
+  image.status=1
+
+  const result = await database.simpleExecute(`INSERT INTO VEAT.LA_ATTACHMENT_GEDUNG
+      (ID,IDGEDUNG, ID_ATTACHMENT, ID_ATTACHMENT_GROUP, STATUS)
+      VALUES(ID_GEN_ATTGED(),
+      :idgedung,
+      :id_attachment,
+      :id_attachment_group,
+      :status) returning id into :id`, {image}
+  )
+  image.id = result.outBinds.employee_id[0];
+  return image;
+}
+
+async function queryInsertGedung(data){
+  const gedung = Object.assign({}, data);
+  gedung.id = {
+    dir: oracledb.BIND_OUT,
+    type: oracledb.NUMBER
+  }
+  const result = await database.simpleExecute(`INSERT INTO VEAT.GIS_BANGUNAN_MASTER
+        (IDGEDUNG,IDAREAL,NAMA, ALAMAT, COOR_X, COOR_Y)
+        VALUES(ID_GENGEDUNG(),
+        :idareal,
+        :nama,
+        :alamat,
+        :coor_x,
+        :coor_x,
+        :coor_y) returning idgedung into :id`, {gedung}
+  )
+  gedung.id = result.outBinds.id[0]
+  return gedung;
+}
+
+//base url pindahin ke .env
 async function getImageRequest(id, type){
-  const images = await database.simpleExecute(`SELECT ID, FILE_PATH from LA_REQUEST_ATTACHMENT WHERE IDREQUEST= :id AND "TYPE" = :type`, {id:id, type:type})
+  const images = await queryGetRequestImages(id, type)
   return images.rows.length > 0 ? images.rows.map(img=>{
     return {
       ID: img.ID,
@@ -476,7 +550,6 @@ async function updateGedung(req, id){
   const reqGedung = await database.simpleExecute(`SELECT ID, IDGEDUNG, ID_REQUEST_LAHAN, ALAMAT, COOR_Y, COOR_X from LA_REQUEST_GEDUNG WHERE ID= :id AND REQUEST_BY = :request_by AND STATUS_REQUEST IN ('PENDING','REVISI')`, {id:id, request_by:data.request_by})
 
   if(reqGedung.rows.length > 0 && reqGedung.rows[0].ID_REQUEST_LAHAN!==null){
-    //return 'how';
     const reqLahan = await database.simpleExecute(`SELECT ID,ALAMAT, COOR_X, COOR_Y from LA_REQUEST_LAHAN WHERE ID= :id AND REQUEST_BY = :request_by`, {id:reqGedung.rows[0].ID_REQUEST_LAHAN, request_by:data.request_by})
     if(reqLahan.rows.length > 0){
       const update = await updateRequestGedung(data,reqLahan.rows[0],id)
@@ -637,6 +710,7 @@ async function upload(context){
       throw createError(500,e.message);
   }
 }
+
 async function writeImageToDisk({id, type, created_date}, image){
   if(isBase64(image, {mime: true})){
     const nama = +Date.now()+'.png'
@@ -702,21 +776,19 @@ async function deleteImage(context){
 
 //mindahin gambar
 //midahindata ke la lahan dan gis bangunan master
-async function acceptRequestLahan({id, update_by, updated_date}){
-  const result =  await database.simpleExecute(`UPDATE LA_REQUEST_LAHAN
-    SET STATUS_REQUEST = 'ACCEPT',
-    UPDATE_BY = :update_by, 
-    UPDATE_DATE = TO_DATE(:updated_date, 'yyyy/mm/dd hh24:mi:ss')
-    WHERE ID= :id`, {
-      id,
-      update_by,
-      updated_date,
-  });
-  if (result.rowsAffected && result.rowsAffected === 1) {
-    //accept semua gedung
-    //mindahin gambar gedung
+async function acceptRequestLahan(context){
+  const dataUpdate={
+    ...context,
+    status:'ACCEPT'
+  }
+  const result = await updateRequestStatus(dataUpdate, 'LA_REQUEST_LAHAN')
+  if (result) {
+    //accept semua gedung GIS_BANGUNAN_MASTER
 
-    //mindahin gambar lahan da 
+    //mindahin gambar gedung LA_ATTACHMENT_GEDUNG
+
+
+    //mindahin gambar lahan da LA_LAHAN
     return true;
   } 
 
@@ -724,97 +796,139 @@ async function acceptRequestLahan({id, update_by, updated_date}){
 
 }
 
-async function declineRequestLahan({id, update_by, updated_date}){
-  const result =  await database.simpleExecute(`UPDATE LA_REQUEST_LAHAN
-    SET STATUS_REQUEST = 'DECLINE',
-    UPDATE_BY = :update_by, 
-    UPDATE_DATE = TO_DATE(:updated_date, 'yyyy/mm/dd hh24:mi:ss')
-    WHERE ID= :id`, {
-      id,
-      update_by,
-      updated_date,
-  });
-  if (result.rowsAffected && result.rowsAffected === 1) {
+async function declineRequestLahan(context){
+  const dataUpdate={
+    ...context,
+    status:'DECLINE'
+  }
+  const result = await updateRequestStatus(dataUpdate, 'LA_REQUEST_LAHAN')
+
+  if (result) {
+    return true;
+  }
+
+  throw createError(404, 'Lahan tidak ditemukan!') 
+}
+
+async function revisiRequestLahan(context){
+  const dataUpdate={
+    ...context,
+    status:'REVISI'
+  }
+  const result = await updateRequestStatus(dataUpdate, 'LA_REQUEST_LAHAN')
+
+  if (result) {
     return true;
   } 
 
   throw createError(404, 'Lahan tidak ditemukan!') 
 }
 
-async function revisiRequestLahan({id, update_by, updated_date, note}){
-  const result =  await database.simpleExecute(`UPDATE LA_REQUEST_LAHAN
-    SET STATUS_REQUEST = 'REVISI',
-    UPDATE_BY = :update_by, 
-    UPDATE_DATE = TO_DATE(:updated_date, 'yyyy/mm/dd hh24:mi:ss'),
-    NOTES= :note
-    WHERE ID= :id`, {
-      id,
-      update_by,
-      updated_date,
-      note
-  });
+
+async function updateRequestStatus(data, table='LA_REQUEST_GEDUNG'){
+  let baseQuery = `UPDATE ${table} `;
+  
+  let setQuery= `SET STATUS_REQUEST = :status,
+  UPDATE_BY = :update_by, 
+  UPDATE_DATE = TO_DATE(:updated_date, 'yyyy/mm/dd hh24:mi:ss') `;
+  
+  if(data.STATUS === 'REVISI'){
+    setQuery + `,NOTES= :note `;
+  }
+
+  let conditionQuery =`WHERE ID= :id AND STATUS_REQUEST IN ('REVISI', 'PENDING')`;
+
+  const query= baseQuery + setQuery + conditionQuery;
+  const result =  await database.simpleExecute(query, data);
   if (result.rowsAffected && result.rowsAffected === 1) {
     return true;
   } 
-
-  throw createError(404, 'Lahan tidak ditemukan!') 
+  
+  return false;
 }
-
 
 //cek id apakah statusnya masih pending/revisi
 //update status request
+async function acceptRequestGedung(context){
+    const id = context.id
+    const reqGedung =  await database.simpleExecute(`SELECT * LA_REQUEST_GEDUNG WHERE ID= :id AND STATUS_REQUEST IN ('REVISI', 'PENDING')`, {id});
+    
+    const dataUpdate={
+      ...context,
+      status:'ACCEPT'
+    }
+    const result = await updateRequestStatus(dataUpdate)
 
-//beres
-async function acceptRequestGedung({id, update_by, updated_date}){
-    const result =  await database.simpleExecute(`UPDATE LA_REQUEST_GEDUNG
-      SET STATUS_REQUEST = 'ACCEPT',
-      UPDATE_BY = :update_by, 
-      UPDATE_DATE = TO_DATE(:updated_date, 'yyyy/mm/dd hh24:mi:ss')
-      WHERE ID= :id`, {
-        id,
-        update_by,
-        updated_date,
-    });
-    if (result.rowsAffected && result.rowsAffected === 1) {
-      //update gedung yang berhub / insert gedung baru
-      //pindahin gambar ke LA_ATT?
+    if (result) {
+      if(reqGedung.rows[0].IDGEDUNG !== undefined  && reqGedung.rows[0].IDGEDUNG !== null){
+        const resUpdate =  await database.simpleExecute(`UPDATE GIS_MASTER_BANGUNAN
+          SET NAMA_GEDUNG = :nama_gedung
+          WHERE ID= :id`, {
+            id: reqGedung.rows[0].IDGEDUNG,
+            nama_gedung: reqGedung.rows[0].NAMA,
+        });
+        const idGedung = reqGedung.rows[0].IDGEDUNG
+        moveAttachmentRequest(id, idGedung)
+      }else{
+        //insert gedung baru GIS BANGUNAN MASTER 
+        //get id lahan dan cek id lahnnya kosong????
+        const reqLahan = await database.simpleExecute(`SELECT FROM LA_REQUEST_LAHAN WHERE ID= :id `, {
+          id: redGedung.rows[0].ID_REQUEST_LAHAN
+        });
+        const dataGedung = {
+          idareal: reqLahan.rows[0].IDAREAL,
+          nama: reqGedung.rows[0].NAMA,
+          alamat: reqGedung.rows[0].ALAMAT,
+          coor_x: reqGedung.rows[0].COOR_X,
+          coor_y: reqGedung.rows[0].COOR_Y
+        }
+        const resultInsertGedung = await queryInsertGedung(dataGedung)
+        const idGedung = resultInsertGedung.id
+        moveAttachmentRequest(id, idGedung)
+      }
+      
       return true;
     } 
-
     throw createError(404, 'Gedung tidak ditemukan!') 
-  
 }
 
-async function declineRequestGedung({id, update_by, updated_date}){
-  const result =  await database.simpleExecute(`UPDATE LA_REQUEST_GEDUNG
-    SET STATUS_REQUEST = 'DECLINE',
-    UPDATE_BY = :update_by, 
-    UPDATE_DATE = TO_DATE(:updated_date, 'yyyy/mm/dd hh24:mi:ss')
-    WHERE ID= :id`, {
-      id,
-      update_by,
-      updated_date,
-  });
-  if (result.rowsAffected && result.rowsAffected === 1) {
+async function moveAttachmentRequest(idRequest,idGedung){
+  const images = await queryGetRequestImages(idRequest,'GEDUNG')
+  images.rows.map(async image=>{
+    const data = {
+      file_name: image.FILE_NAME,
+      file_path: image.FILE_PATH,
+      base_url:'http://10.60.164.5/myassist/',
+      created_date: getDate()
+    }
+    const idAttachment = await queryInsertAttachImage(data)
+
+    const id_attachment = idAttachment.id
+    const idAttachmentGedung = await queryInsertAttachImageGedung({idGedung, id_attachment})
+  })
+}
+
+async function declineRequestGedung(context){
+  const dataUpdate={
+    ...context,
+    status:'DECLINE'
+  }
+  const result = await updateRequestStatus(dataUpdate)
+  if (result) {
     return true;
   } 
 
   throw createError(404, 'Gedung tidak ditemukan!') 
 }
 
-async function revisiRequestGedung({id, update_by, updated_date, note}){
-  const result =  await database.simpleExecute(`UPDATE LA_REQUEST_GEDUNG
-    SET STATUS_REQUEST = 'REVISI',
-    UPDATE_BY = :update_by, 
-    UPDATE_DATE = TO_DATE(:updated_date, 'yyyy/mm/dd hh24:mi:ss'),
-    NOTES= :note
-    WHERE ID= :id`, {
-      id,
-      update_by,
-      updated_date,
-      note
-  });
-  if (result.rowsAffected && result.rowsAffected === 1) {
+async function revisiRequestGedung(context){
+  const dataUpdate={
+    ...context,
+    status:'REVISI'
+  }
+  const result = await updateRequestStatus(dataUpdate)
+  
+  if (result) {
     return true;
   } 
 
