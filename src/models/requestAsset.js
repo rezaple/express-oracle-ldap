@@ -911,7 +911,7 @@ async function acceptRequestGedung(context){
     if (reqGedung.rows.length > 0) {
       const dataUpdate={
         ...context,
-        status:'PENDING'
+        status:'ACCEPT'
       }
       const result = await updateRequestStatus(dataUpdate)
       if(result){
