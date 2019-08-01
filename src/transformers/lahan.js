@@ -109,7 +109,8 @@ function transformPBBLahan(pbb){
         NJOP_BANGUNAN: pbb.NJOP_BANGUNAN?parseInt(pbb.NJOP_BANGUNAN,10):0,
         KELAS_BANGUNAN: pbb.KELAS_BANGUNAN?pbb.KELAS_BANGUNAN:"",
         TOTAL_NJOP_BANGUNAN: pbb.TOTAL_NJOP_BANGUNAN?parseInt(pbb.TOTAL_NJOP_BANGUNAN,10):0,
-        TOTAL_PBB_DIBAYAR: pbb.TOTAL_PBB_DIBAYAR?parseInt(pbb.TOTAL_PBB_DIBAYAR,10):0
+        TOTAL_PBB_DIBAYAR: pbb.TOTAL_PBB_DIBAYAR?parseInt(pbb.TOTAL_PBB_DIBAYAR,10):0,
+        ATTACHMENT:pbb.attachment
     }
 }
 

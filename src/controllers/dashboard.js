@@ -282,9 +282,6 @@ async function revisiRequestLahan(req, res, next){
   redirectToLogin(req, res)
 }
 
-
-
-
 async function acceptRequestGedung(req, res, next){
   if (req.session.loggedin) {
     try{

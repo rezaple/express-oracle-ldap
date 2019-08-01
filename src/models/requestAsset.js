@@ -229,11 +229,29 @@ async function queryInsertGedung(data){
         :nama,
         :alamat,
         :coor_x,
-        :coor_x,
-        :coor_y) returning idgedung into :id`, {gedung}
+        :coor_y) returning IDGEDUNG into :id`, {gedung}
   )
   gedung.id = result.outBinds.id[0]
   return gedung;
+}
+
+async function queryInsertLahan(data){
+  const lahan = Object.assign({}, data);
+  lahan.id = {
+    dir: oracledb.BIND_OUT,
+    type: oracledb.NUMBER
+  }
+  const result = await database.simpleExecute(`INSERT INTO VEAT.GIS_LAHAN_MASTER
+        (IDAREAL,NAMA_LAHAN, ALAMAT, COOR_X, COOR_Y, TREGID
+        VALUES(ID_GENLAHAN(),
+        :nama_lahan,
+        :alamat,
+        :coor_x,
+        :coor_y,
+        :regional_id) returning IDAREAL into :id`, {lahan}
+  )
+  lahan.id = result.outBinds.id[0]
+  return lahan;
 }
 
 //base url pindahin ke .env
@@ -247,8 +265,13 @@ async function getImageRequest(id, type){
   }) : [];
 }
 
+async function getRequestGedungByRequestLahan(id){
+  const result =  await database.simpleExecute(`SELECT * from LA_REQUEST_GEDUNG WHERE ID_REQUEST_LAHAN= :id`, {id:id})
+  return result
+}
+
 async function getGedungRequestLahan(id){
-  const gedung = await database.simpleExecute(`SELECT * from LA_REQUEST_GEDUNG WHERE ID_REQUEST_LAHAN= :id`, {id:id})
+  const gedung = await getRequestGedungByRequestLahan(id)
   const gdPromises = gedung.rows.map(async gd=>{
     const imgGedung =  await database.simpleExecute(`SELECT ID, FILE_PATH from LA_REQUEST_ATTACHMENT WHERE IDREQUEST= :id AND TYPE ='GEDUNG' AND ROWNUM = 1`, {id:gd.ID})
 
@@ -774,26 +797,66 @@ async function deleteImage(context){
   return false;
 }
 
-//mindahin gambar
-//midahindata ke la lahan dan gis bangunan master
 async function acceptRequestLahan(context){
-  const dataUpdate={
-    ...context,
-    status:'ACCEPT'
+  const id = context.id
+  const reqLahan =  await database.simpleExecute(`SELECT * FROM LA_REQUEST_LAHAN WHERE ID= :id AND STATUS_REQUEST IN ('REVISI', 'PENDING')`, {id});
+
+  if(reqLahan.rows.length > 0){
+    const dataUpdate={
+      ...context,
+      status:'ACCEPT'
+    }
+    const result = await updateRequestStatus(dataUpdate, 'LA_REQUEST_LAHAN')
+    if (result) {
+      if(reqLahan.rows[0].IDAREAL !== null){
+        const resUpdate =  await database.simpleExecute(`UPDATE GIS_LAHAN_MASTER
+          SET NAMA_LAHAN = :nama_lahan,
+          NAMA_LAHAN = :nama_lahan,
+          COOR_X = :coor_x,
+          COOR_Y = :coor_y,
+          ALAMAT = :alamat
+          WHERE IDAREAL= :id`, {
+            id: reqLahan.rows[0].IDAREAL,
+            nama_lahan: reqGedung.rows[0].NAMA_LAHAN,
+            coor_x: reqGedung.rows[0].COOR_X,
+            coor_y: reqGedung.rows[0].COOR_Y,
+            alamat: reqGedung.rows[0].ALAMAT
+        });
+        const idLahan = reqLahan.rows[0].IDAREAL
+        moveAttachmentRequest(id, idLahan, 'LAHAN')
+        moveReqGedung(id)
+      }else{
+        const dataLahan ={
+          nama_lahan: reqLahan.rows[0].NAMA,
+          alamat: reqLahan.rows[0].ALAMAT,
+          coor_x: reqLahan.rows[0].COOR_X,
+          coor_y: reqLahan.rows[0].COOR_Y,
+          regional_id: reqLahan.rows[0].TELKOM_REGIONAL
+        }
+        const resLahan = await queryInsertLahan(dataLahan)
+        moveAttachmentRequest(id, resLahan.id, 'LAHAN')
+        moveReqGedung(id)
+      }
+      return true;
+    } 
   }
-  const result = await updateRequestStatus(dataUpdate, 'LA_REQUEST_LAHAN')
-  if (result) {
-    //accept semua gedung GIS_BANGUNAN_MASTER
+  throw createError(404, 'Lahan tidak ditemukan atau tidak memenuhi kriteria!') 
+}
 
-    //mindahin gambar gedung LA_ATTACHMENT_GEDUNG
-
-
-    //mindahin gambar lahan da LA_LAHAN
-    return true;
-  } 
-
-  throw createError(404, 'Lahan tidak ditemukan!') 
-
+async function moveReqGedung(idReqLahan){
+  const listReqGedung = await getRequestGedungByRequestLahan(idReqLahan)
+  listReqGedung.rows.map(async reqGedung=>{
+      const dataGedung = {
+        idareal: reqLahan.rows[0].IDAREAL,
+        nama: reqGedung.NAMA,
+        alamat: reqGedung.ALAMAT,
+        coor_x: reqGedung.COOR_X,
+        coor_y: reqGedung.COOR_Y
+      }
+      const resultInsertGedung = await queryInsertGedung(dataGedung)
+      const resID = resultInsertGedung.id
+      moveAttachmentRequest(reqGedung.ID, resID, 'GEDUNG')
+  })
 }
 
 async function declineRequestLahan(context){
@@ -851,49 +914,33 @@ async function updateRequestStatus(data, table='LA_REQUEST_GEDUNG'){
 //update status request
 async function acceptRequestGedung(context){
     const id = context.id
-    const reqGedung =  await database.simpleExecute(`SELECT * LA_REQUEST_GEDUNG WHERE ID= :id AND STATUS_REQUEST IN ('REVISI', 'PENDING')`, {id});
-    
-    const dataUpdate={
-      ...context,
-      status:'ACCEPT'
-    }
-    const result = await updateRequestStatus(dataUpdate)
+    const reqGedung =  await database.simpleExecute(`SELECT * FROM LA_REQUEST_GEDUNG WHERE ID= :id AND IDGEDUNG IS NOT NULL AND STATUS_REQUEST IN ('REVISI', 'PENDING')`, {id});
 
-    if (result) {
-      if(reqGedung.rows[0].IDGEDUNG !== undefined  && reqGedung.rows[0].IDGEDUNG !== null){
-        const resUpdate =  await database.simpleExecute(`UPDATE GIS_MASTER_BANGUNAN
+    if (reqGedung.rows.length > 0) {
+      const dataUpdate={
+        ...context,
+        status:'ACCEPT'
+      }
+      const result = await updateRequestStatus(dataUpdate)
+      if(result){
+        const resUpdate =  await database.simpleExecute(`UPDATE GIS_BANGUNAN_MASTER
           SET NAMA_GEDUNG = :nama_gedung
-          WHERE ID= :id`, {
+          WHERE IDGEDUNG= :id`, {
             id: reqGedung.rows[0].IDGEDUNG,
             nama_gedung: reqGedung.rows[0].NAMA,
         });
         const idGedung = reqGedung.rows[0].IDGEDUNG
-        moveAttachmentRequest(id, idGedung)
+        moveAttachmentRequest(id, idGedung, 'GEDUNG')
       }else{
-        //insert gedung baru GIS BANGUNAN MASTER 
-        //get id lahan dan cek id lahnnya kosong????
-        const reqLahan = await database.simpleExecute(`SELECT FROM LA_REQUEST_LAHAN WHERE ID= :id `, {
-          id: redGedung.rows[0].ID_REQUEST_LAHAN
-        });
-        const dataGedung = {
-          idareal: reqLahan.rows[0].IDAREAL,
-          nama: reqGedung.rows[0].NAMA,
-          alamat: reqGedung.rows[0].ALAMAT,
-          coor_x: reqGedung.rows[0].COOR_X,
-          coor_y: reqGedung.rows[0].COOR_Y
-        }
-        const resultInsertGedung = await queryInsertGedung(dataGedung)
-        const idGedung = resultInsertGedung.id
-        moveAttachmentRequest(id, idGedung)
+          throw createError(500, 'Persetujuan request gagal!') 
       }
-      
       return true;
     } 
-    throw createError(404, 'Gedung tidak ditemukan!') 
+    throw createError(404, 'Gedung tidak ditemukan atau tidak memenuhi kriteria!') 
 }
 
-async function moveAttachmentRequest(idRequest,idGedung){
-  const images = await queryGetRequestImages(idRequest,'GEDUNG')
+async function moveAttachmentRequest(idRequest,idMaster, type){
+  const images = await queryGetRequestImages(idRequest,type)
   images.rows.map(async image=>{
     const data = {
       file_name: image.FILE_NAME,
@@ -904,7 +951,8 @@ async function moveAttachmentRequest(idRequest,idGedung){
     const idAttachment = await queryInsertAttachImage(data)
 
     const id_attachment = idAttachment.id
-    const idAttachmentGedung = await queryInsertAttachImageGedung({idGedung, id_attachment})
+    if(type==='GEDUNG')
+      await queryInsertAttachImageGedung({idMaster, id_attachment})
   })
 }
 

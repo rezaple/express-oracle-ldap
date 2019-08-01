@@ -225,7 +225,13 @@ async function getDetail(params, idAreal)
     result.kepemilikan= kepemilikan.length > 0?kepemilikan:[];
 
     const resPBB = await database.simpleExecute(`SELECT * FROM LA_PBB_LAHAN WHERE IDAREAL = :ID_AREAL ORDER BY NVL(TAHUN, -1) DESC`,{ID_AREAL: idAreal});
-    result.pbb = resPBB.rows.length > 0 ? resPBB.rows.map(pbb=>transform.transformPBBLahan(pbb)) : [];
+    const pbbPromises = resPBB.rows.map(async pbb=>{
+        const resAttachment = await database.simpleExecute(`SELECT * FROM LA_ATT_PBB_LAHAN WHERE ID_PBB = :ID_PBB AND ROWNUM <= 1`, {ID_PBB:pbb.ID});
+        resAttachment.rows.length > 0 ? pbb.attachment =  transform.transformAttSertifikatLahan(resAttachment.rows[0]):"";
+        return await transform.transformPBBLahan(pbb)
+    }) ;
+    const pbb = await Promise.all(pbbPromises)
+    result.pbb= pbb.length > 0 ? pbb : [];
 
     const resKJPP = await database.simpleExecute(`SELECT a.ID, a.LUAS, a.HARGA, a.TANGGAL, a.NAMA FROM LA_KJPP_LAHAN a JOIN GIS_LAHAN_MASTER b on TO_CHAR(a.IDAREAL) = TO_CHAR(b.IDAREAL) WHERE b.IDAREAL = :ID_AREAL AND ROWNUM <= 1`,{ID_AREAL: idAreal});
      resKJPP.rows.length > 0 ? result.nilai_aset = resKJPP.rows.reduce((acc, kjpp)=>transform.transformKJPPLahan(kjpp),0) : "";

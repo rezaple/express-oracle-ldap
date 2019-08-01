@@ -62,23 +62,24 @@ block content
 								
 					.row.d-print-none.mt-2
 						.col-12.text-right
-							if(data.gedung.STATUS ==='PENDING')
-								a.btn.btn-primary.mr-1(href='javascript:window.print();', data-toggle="modal" 
-data-target="#acceptModal")
-									|  Accept 
-								a.btn.btn-danger.mr-1(href='javascript:window.print();',  data-toggle="modal" 
-data-target="#declineModal")
-									|  Decline
-								a.btn.btn-warning(href='javascript:window.print();',  data-toggle="modal" 
-data-target="#revisiModal")
-									|  Revisi
-							else if(data.gedung.STATUS === 'REVISI')
-								a.btn.btn-primary.mr-1(href='javascript:window.print();', data-toggle="modal" 
-data-target="#acceptModal")
-									|  Accept 
-								a.btn.btn-danger.mr-1(href='javascript:window.print();', data-toggle="modal" 
-data-target="#declineModal")
-									|  Decline
+							if(data.gedung.ID_GEDUNG)
+								if(data.gedung.STATUS ==='PENDING')
+									a.btn.btn-primary.mr-1(href='javascript:window.print();', data-toggle="modal" 
+	data-target="#acceptModal")
+										|  Accept 
+									a.btn.btn-danger.mr-1(href='javascript:window.print();',  data-toggle="modal" 
+	data-target="#declineModal")
+										|  Decline
+									a.btn.btn-warning(href='javascript:window.print();',  data-toggle="modal" 
+	data-target="#revisiModal")
+										|  Revisi
+								else if(data.gedung.STATUS === 'REVISI')
+									a.btn.btn-primary.mr-1(href='javascript:window.print();', data-toggle="modal" 
+	data-target="#acceptModal")
+										|  Accept 
+									a.btn.btn-danger.mr-1(href='javascript:window.print();', data-toggle="modal" 
+	data-target="#declineModal")
+										|  Decline
 								
 	.tile.mb-04
 		h4 Gambar
