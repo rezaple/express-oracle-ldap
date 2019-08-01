@@ -184,7 +184,6 @@ async function uploadNKA(req, res, next) {
       error.status = 400
       return next(error)
     }
-    // res.send(file)
     const data= load_data(file.path)
     fs.unlinkSync(file.path)
     const result = await admin.storeNKA(data);
@@ -208,7 +207,6 @@ async function uploadNKA2(req, res, next) {
         req.flash('error', 'Dokumen dibutuhkan!');
         return res.redirect('/upload-nka');
     }
-    // res.send(file)
     const data= load_data(file.path)
     fs.unlinkSync(file.path)
     const result = await admin.storeNKA(data);
@@ -328,7 +326,7 @@ async function revisiRequestGedung(req, res, next){
       const context = {
         id: parseInt(req.params.id, 10),
         note: req.body.notes||"",
-        update_by: req.session.username,
+        update_by: req.session.username || 930341,
         updated_date:getDate()
       }
       const result = await requestAsset.revisiRequestGedung(context)

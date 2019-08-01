@@ -188,9 +188,8 @@ async function queryInsertAttachImage(data){
       :file_name,
       :file_path,
       :base_url, 
-      TO_DATE(:created_date, 'yyyy-mm-dd hh24:mi:ss')) returning id into :id`, {image}
-  )
-  image.id = result.outBinds.employee_id[0];
+      TO_DATE(:created_date, 'yyyy-mm-dd hh24:mi:ss')) returning id into :id`, image)
+  image.id = result.outBinds.id[0];
   return image;
 }
 
@@ -210,9 +209,8 @@ async function queryInsertAttachImageGedung(data){
       :idgedung,
       :id_attachment,
       :id_attachment_group,
-      :status) returning id into :id`, {image}
-  )
-  image.id = result.outBinds.employee_id[0];
+      :status) returning id into :id`, image)
+  image.id = result.outBinds.id[0];
   return image;
 }
 
@@ -889,20 +887,14 @@ async function revisiRequestLahan(context){
 
 
 async function updateRequestStatus(data, table='LA_REQUEST_GEDUNG'){
-  let baseQuery = `UPDATE ${table} `;
-  
-  let setQuery= `SET STATUS_REQUEST = :status,
-  UPDATE_BY = :update_by, 
-  UPDATE_DATE = TO_DATE(:updated_date, 'yyyy/mm/dd hh24:mi:ss') `;
-  
-  if(data.STATUS === 'REVISI'){
-    setQuery + `,NOTES= :note `;
+  let addQuery=""
+  if(data.status==="REVISI"){
+    addQuery+= `, NOTES= :note`
   }
-
-  let conditionQuery =`WHERE ID= :id AND STATUS_REQUEST IN ('REVISI', 'PENDING')`;
-
-  const query= baseQuery + setQuery + conditionQuery;
-  const result =  await database.simpleExecute(query, data);
+  const result =  await database.simpleExecute(`UPDATE ${table} SET STATUS_REQUEST = :status,
+  UPDATE_BY = :update_by, 
+  UPDATE_DATE = TO_DATE(:updated_date, 'yyyy-mm-dd hh24:mi:ss')
+  ${addQuery} WHERE ID= :id AND STATUS_REQUEST IN ('REVISI', 'PENDING')`, data);
   if (result.rowsAffected && result.rowsAffected === 1) {
     return true;
   } 
@@ -919,7 +911,7 @@ async function acceptRequestGedung(context){
     if (reqGedung.rows.length > 0) {
       const dataUpdate={
         ...context,
-        status:'ACCEPT'
+        status:'PENDING'
       }
       const result = await updateRequestStatus(dataUpdate)
       if(result){
@@ -939,9 +931,9 @@ async function acceptRequestGedung(context){
     throw createError(404, 'Gedung tidak ditemukan atau tidak memenuhi kriteria!') 
 }
 
-async function moveAttachmentRequest(idRequest,idMaster, type){
+async function moveAttachmentRequest(idRequest,idgedung, type){
   const images = await queryGetRequestImages(idRequest,type)
-  images.rows.map(async image=>{
+  const imgPromises = images.rows.map(async image=>{
     const data = {
       file_name: image.FILE_NAME,
       file_path: image.FILE_PATH,
@@ -949,11 +941,11 @@ async function moveAttachmentRequest(idRequest,idMaster, type){
       created_date: getDate()
     }
     const idAttachment = await queryInsertAttachImage(data)
-
     const id_attachment = idAttachment.id
     if(type==='GEDUNG')
-      await queryInsertAttachImageGedung({idMaster, id_attachment})
+      await queryInsertAttachImageGedung({idgedung, id_attachment})
   })
+  return await Promise.all(imgPromises)
 }
 
 async function declineRequestGedung(context){
@@ -975,7 +967,6 @@ async function revisiRequestGedung(context){
     status:'REVISI'
   }
   const result = await updateRequestStatus(dataUpdate)
-  
   if (result) {
     return true;
   } 
