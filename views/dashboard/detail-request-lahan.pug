@@ -28,6 +28,14 @@ block content
 	.row
 		.col-md-12
 			.tile
+				- if (messages.success)
+					.alert.alert-success.alert-dismissable
+						button.close(type='button', data-dismiss='alert', aria-hidden='true') × 
+						| #{messages.success}
+				- if (messages.error)
+					.alert.alert-danger.alert-dismissable
+						button.close(type='button', data-dismiss='alert', aria-hidden='true') × 
+						| #{messages.error}
 				section.invoice
 					.row
 						#map

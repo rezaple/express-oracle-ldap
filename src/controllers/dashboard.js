@@ -228,9 +228,15 @@ async function acceptRequestLahan(req, res, next){
         updated_date:getDate()
       }
       const result = await requestAsset.acceptRequestLahan(context)
+      res.status(200).json({
+        message:result
+      })
       req.flash('success', `Sukses menerima request.`);
       return res.redirect(baseUrl+'/request-lahan/'+context.id)
     }catch (err) {
+      res.status(500).json({
+        message: err.message
+      })
       const id= parseInt(req.params.id, 10)
       req.flash('error', `Maaf, terjadi kesalahan di server <${err.message}>`);
       return res.redirect(baseUrl+'/request-lahan/'+id)

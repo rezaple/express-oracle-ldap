@@ -62,7 +62,7 @@ block content
 								
 					.row.d-print-none.mt-2
 						.col-12.text-right
-							if(data.gedung.ID_GEDUNG)
+							if(data.gedung.ID_GEDUNG || data.gedung.ID_AREAL)
 								if(data.gedung.STATUS ==='PENDING')
 									a.btn.btn-primary.mr-1(href='javascript:window.print();', data-toggle="modal" 
 	data-target="#acceptModal")
@@ -80,6 +80,8 @@ block content
 									a.btn.btn-danger.mr-1(href='javascript:window.print();', data-toggle="modal" 
 	data-target="#declineModal")
 										|  Decline
+							else
+								span *Tombol aksi muncul jika request lahan sudah diverifikasi.
 								
 	.tile.mb-04
 		h4 Gambar
