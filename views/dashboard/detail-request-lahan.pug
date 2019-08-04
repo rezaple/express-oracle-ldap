@@ -103,6 +103,14 @@ data-target="#declineModal")
 								p.card-text
 									| #{gedung.ALAMAT}
 								a.card-link(href=baseUrl+'/request-gedung/'+gedung.ID) Detail
+								if(gedung.STATUS ==='PENDING')
+										span.card-link.badge.badge-info.mr-1 #{_.capitalize(gedung.STATUS)}
+								else if(gedung.STATUS === 'DECLINE')
+										span.card-link.badge.badge-danger.mr-1 #{_.capitalize(gedung.STATUS)}
+								else if(gedung.STATUS === 'REVISI')
+										span.card-link.badge.badge-warning.mr-1 #{_.capitalize(gedung.STATUS)}
+								else if(gedung.STATUS === 'ACCEPT')
+										span.card-link.badge.badge-success.mr-1 #{_.capitalize(gedung.STATUS)}
 	+modal({
 		title:'Accept', 
 		id:'acceptModal', 

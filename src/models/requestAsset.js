@@ -438,6 +438,7 @@ async function getRequestLahan(context){
           ID: gd.ID,
           NAMA: gd.NAMA,
           ALAMAT: gd.ALAMAT||"",
+          STATUS: gd.STATUS_REQUEST||"",
           PATH : imgGedung.rows.length > 0 ? 'http://10.60.164.5/myassist/'+imgGedung.rows[0].FILE_PATH:""
         }
       });
