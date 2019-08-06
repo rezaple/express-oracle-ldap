@@ -13,7 +13,7 @@ const multer = require('multer');
 
 const storage = multer.diskStorage({
   destination: function(req, file, cb) {
-    cb(null, './public/sheets/');
+    cb(null, './public/images/');
   },
   filename: function(req, file, cb) {
     cb(null, Math.floor(new Date() / 1000) + file.originalname);
@@ -21,8 +21,8 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-  if (!file.originalname.match(/\.(xls|xlsx)$/)) {
-    return cb(new Error('Only excel files are allowed!'));
+  if (!file.originalname.match(/\.(jpeg|png|jpg)$/)) {
+    return cb(new Error('Only image files are allowed!'));
   }
 
   cb(null, true)
@@ -58,7 +58,6 @@ router.route('/kota/:idCity/kecamatan')
       .get(area.getSubDistricts);
 router.route('/login')
       .post(auth.login);
-router.post('/upload-nka',upload.single('file'), dashboard.uploadNKA)
 //area need authenticate
 router.use(function (req, res, next) {
   const token = req.headers.authorization;
@@ -121,6 +120,8 @@ router.route('/request-lahan/:id/upload')
       .post(requestAsset.uploadImageLahan);
 router.route('/request-gedung/:id/upload')
       .post(requestAsset.uploadImageGedung);
+router.post('/request-lahan/:id/upload-form', upload.array('images',5),requestAsset.uploadImageLahanForm);
+router.post('/request-gedung/:id/upload-form',upload.array('images',5),requestAsset.uploadImageGedungForm);
 router.route('/image/:id/delete')
       .post(requestAsset.deleteImage);
 router.post(

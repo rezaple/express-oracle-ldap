@@ -713,6 +713,68 @@ async function uploadLahan(context){
   }
 }
 
+async function uploadLahanForm(context){
+  try {
+    const reqLahan =  await database.simpleExecute(`SELECT * from LA_REQUEST_LAHAN WHERE ID= :id AND REQUEST_BY = :request_by AND STATUS_REQUEST IN ('PENDING','REVISI')`, {id:context.id, request_by:context.nik})
+    if(reqLahan.rows.length > 0){
+      const imgPromises = context.images.map(async image=>{
+        const res = await storeImageForm({
+          ...context,
+          image
+        })
+        return res
+      })
+      return await Promise.all(imgPromises)
+    }
+    throw createError(404, 'Request Lahan tidak ditemukan!') 
+  } catch (e) {
+    throw createError(500,e.message);
+  }
+}
+
+async function uploadGedungForm(context){
+  try {
+    const reqLahan =  await database.simpleExecute(`SELECT * from LA_REQUEST_GEDUNG WHERE ID= :id AND REQUEST_BY = :request_by AND STATUS_REQUEST IN ('PENDING','REVISI')`, {id:context.id, request_by:context.nik})
+    if(reqLahan.rows.length > 0){
+      const imgPromises = context.images.map(async image=>{
+        const res = await storeImageForm({
+          ...context,
+          image
+        })
+        return res
+      })
+      return await Promise.all(imgPromises)
+    }
+    throw createError(404, 'Request Gedung tidak ditemukan!') 
+  } catch (e) {
+    throw createError(500,e.message);
+  }
+}
+
+async  function storeImageForm(context){
+  const id = {
+    dir: oracledb.BIND_OUT,
+    type: oracledb.NUMBER
+  }
+
+  const result = await database.simpleExecute(`INSERT INTO VEAT.LA_REQUEST_ATTACHMENT
+  (IDREQUEST, FILE_NAME, TYPE, FILE_TYPE, FILE_SIZE, FILE_PATH, CREATED_DATE)
+  VALUES(:idreq,:nama, :type, :filetype, :filesize, :path, TO_DATE(:created_date, 'yyyy/mm/dd hh24:mi:ss')) returning id into :id`, {
+    id:id,
+    idreq:context.id,
+    nama:context.image.filename,
+    type:context.type,
+    filetype:context.image.mimetype,
+    filesize:parseInt(context.image.size),
+    path:context.image.path.slice(6),
+    created_date: context.created_date
+  })
+  return {
+      id: result.outBinds.id[0],
+      path: 'http://10.60.164.5/myassist'+context.image.path.slice(6)
+  }
+}
+
 async function uploadGedung(context){
   try {
     const reqGedung =  await database.simpleExecute(`SELECT * from LA_REQUEST_GEDUNG WHERE ID= :id AND REQUEST_BY = :request_by AND STATUS_REQUEST IN ('PENDING','REVISI')`, {id:context.id, request_by:context.nik})
@@ -779,12 +841,12 @@ async  function storeImage(context){
     idreq:context.id,
     nama:context.nama,
     type:context.type,
-    path:context.path.slice(9),
+    path:context.path.slice(8),
     created_date: context.created_date
   })
   return {
       id: result.outBinds.id[0],
-      path: 'http://10.60.164.5/myassist/'+context.path.slice(9)
+      path: 'http://10.60.164.5/myassist'+context.path.slice(8)
   }
 }
 
@@ -1009,6 +1071,8 @@ module.exports={
   updateLahan,
   updateGedung,
   uploadGedung,
+  uploadGedungForm,
+  uploadLahanForm,
   uploadLahan,
   deleteImage,
   acceptRequestGedung,

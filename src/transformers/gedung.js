@@ -1,3 +1,5 @@
+const { baseUrlImage, baseUrlImageAmc } = require('../config/web-server.js');
+
 function transformList(data){
     return {
         IDGEDUNG: parseInt(data.IDGEDUNG,10),
@@ -10,7 +12,7 @@ function transformList(data){
         JUMLAH_LANTAI: data.JUMLAH_LANTAI?parseInt(data.JUMLAH_LANTAI,10):0,
         SALEABLE_AREA: data.SALEABLE_AREA?parseInt(data.SALEABLE_AREA,10):0,
         NAMA_KEGIATAN: data.NAMA_KEGIATAN?data.NAMA_KEGIATAN:"",
-        PATH_GEDUNG_IMAGE: data.PATH_GEDUNG_IMAGE?'http://mrra.telkom.co.id/gis/assets'+data.PATH_GEDUNG_IMAGE:"",
+        PATH_GEDUNG_IMAGE: data.PATH_GEDUNG_IMAGE? baseUrlImage+data.PATH_GEDUNG_IMAGE:"",
         RN: data.RN,
         DISTANCE: data.DISTANCE? parseFloat(data.DISTANCE.toFixed(2)):0
     }
@@ -36,7 +38,7 @@ function transformGedungMaster(data){
         JUMLAH_LANTAI: data.JUMLAH_LANTAI?parseInt(data.JUMLAH_LANTAI,10):0,
         SALEABLE_AREA: data.SALEABLE_AREA?parseInt(data.SALEABLE_AREA,10):0,
         OCCUPACY_RATE: data.OCCUPACY_RATE?parseInt(data.OCCUPACY_RATE,10):0,
-        PATH_GEDUNG_IMAGE: data.PATH_GEDUNG_IMAGE?'http://mrra.telkom.co.id/gis/assets'+data.PATH_GEDUNG_IMAGE:""
+        PATH_GEDUNG_IMAGE: data.PATH_GEDUNG_IMAGE?baseUrlImage+data.PATH_GEDUNG_IMAGE:""
     };
 }
 
@@ -56,7 +58,7 @@ function transformLahan(data){
         NAMA_KLASIFIKASI: data.NAMA_KLASIFIKASI?data.NAMA_KLASIFIKASI:"",
         STATUS_KEP: data.STATUS_KEP?data.STATUS_KEP:"",
         DESKRIPSI: data.DESKRIPSI?data.DESKRIPSI:"",
-        PATH_LAHAN_IMAGE: data.PATH_LAHAN_IMAGE? 'http://mrra.telkom.co.id/gis/assets'+data.PATH_LAHAN_IMAGE:"",
+        PATH_LAHAN_IMAGE: data.PATH_LAHAN_IMAGE? baseUrlImage+data.PATH_LAHAN_IMAGE:"",
         STATUS_HGB: data.STATUS_HGB?data.STATUS_HGB:"",
     }
 }
@@ -66,7 +68,7 @@ function transformImageGedung(data){
         ID: parseInt(data.ID),
         FILE_NAME: data.FILE_NAME?data.FILE_NAME:"",
         FILE_TITLE: data.FILE_TITLE?data.FILE_TITLE:"",
-        FILE_PATH: data.FILE_PATH? 'http://mrra.telkom.co.id/gis/assets'+data.FILE_PATH:"",
+        FILE_PATH: data.FILE_PATH? baseUrlImage+data.FILE_PATH:"",
         FILE_SIZE: data.FILE_SIZE?data.FILE_SIZE:0,
     }
 }
@@ -135,7 +137,7 @@ function transformTagihanListrik(data){
 }
 
 function transformDocOtherGedung(data){
-    const baseURI = data.SERV?'http://mrra.telkom.co.id/gis/assets':'http://10.60.164.5/myassist/assets'
+    const baseURI = data.SERV ? baseUrlImageAmc : baseUrlImage;
     return {
         ID: parseInt(data.ID,10),
         JENIS_DOKUMEN: data.JENIS_DOKUMEN || "",

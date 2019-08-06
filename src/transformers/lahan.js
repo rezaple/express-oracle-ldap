@@ -1,3 +1,5 @@
+const { baseUrlImage, baseUrlImageAmc } = require('../config/web-server.js');
+
 function transformList(lahan){
     return {
         IDAREAL: parseInt(lahan.IDAREAL),
@@ -14,7 +16,7 @@ function transformList(lahan){
         NAMA_KLASIFIKASI: lahan.NAMA_KLASIFIKASI_ALIAS?lahan.NAMA_KLASIFIKASI_ALIAS:"",
         STATUS_SERTIFIKAT: lahan.STATUS_KEP?lahan.STATUS_KEP:"",
         //DESKRIPSI: lahan.DESKRIPSI?lahan.DESKRIPSI:"",
-        PATH_LAHAN_IMAGE: lahan.PATH_LAHAN_IMAGE? 'http://mrra.telkom.co.id/gis/assets'+lahan.PATH_LAHAN_IMAGE:"",
+        PATH_LAHAN_IMAGE: lahan.PATH_LAHAN_IMAGE? baseUrlImage + lahan.PATH_LAHAN_IMAGE:"",
         STATUS_TANAH: lahan.STATUS_HGB?lahan.STATUS_HGB:"",
         TANAH_KOSONG: (lahan.SALEABLE_AREA===0 || lahan.SALEABLE_AREA===null)?'Tidak Tersedia':'Tersedia',
         LUAS_TANAH_KOSONG: lahan.SALEABLE_AREA?lahan.SALEABLE_AREA:0,
@@ -24,7 +26,7 @@ function transformList(lahan){
 }
 
 function transformDocOtherGedung(data){
-    const baseURI = data.SERV?'http://mrra.telkom.co.id/gis/assets':'http://10.60.164.5/myassist/assets'
+    const baseURI = data.SERV ? baseUrlImageAmc : baseUrlImage;
     return {
         ID: parseInt(data.ID,10),
         JENIS_DOKUMEN: data.JENIS_DOKUMEN || "",
@@ -45,7 +47,7 @@ function transformListGedung(data){
         JUMLAH_LANTAI: data.JUMLAH_LANTAI? parseInt(data.JUMLAH_LANTAI,10):0,
         SALEABLE_AREA: data.SALEABLE_AREA? parseInt(data.SALEABLE_AREA,10):0,
         NAMA_KEGIATAN: data.NAMA_KEGIATAN? data.NAMA_KEGIATAN:"",
-        PATH_GEDUNG_IMAGE: data.PATH_GEDUNG_IMAGE? 'http://mrra.telkom.co.id/gis/assets'+data.PATH_GEDUNG_IMAGE:""
+        PATH_GEDUNG_IMAGE: data.PATH_GEDUNG_IMAGE? baseUrlImage+data.PATH_GEDUNG_IMAGE:""
     }
 }
 
@@ -64,7 +66,7 @@ function transformAttSengketaLahan(data){
     return {
         NAMA_DOKUMEN: data.NAMA_DOKUMEN?data.NAMA_DOKUMEN:"",
         DESKRIPSI: data.DESKRIPSI?data.DESKRIPSI:"",
-        FILE_PATH: data.FILE_PATH? 'http://mrra.telkom.co.id/gis/assets'+data.FILE_PATH:""
+        FILE_PATH: data.FILE_PATH? baseUrlImage+data.FILE_PATH:""
     }
 }
 
@@ -135,7 +137,7 @@ function transformAttSertifikatLahan(att){
         DESKRIPSI: att.DESKRIPSI?att.DESKRIPSI:"",
         FILE_NAME: att.FILE_NAME?att.FILE_NAME:"",
         FILE_TYPE: att.FILE_TYPE?att.FILE_TYPE:"",
-        FILE_PATH: att.FILE_PATH? 'http://mrra.telkom.co.id/gis/assets'+att.FILE_PATH:"",
+        FILE_PATH: att.FILE_PATH? baseUrlImage+att.FILE_PATH:"",
         FILE_SIZE: att.FILE_SIZE?att.FILE_SIZE:0
     }
 }
@@ -145,7 +147,7 @@ function transformImageLahan(img){
         ID: parseInt(img.ID),
         FILE_NAME: img.FILE_NAME?img.FILE_NAME:"",
         FILE_TITLE: img.FILE_TITLE?img.FILE_TITLE:"",
-        FILE_PATH: img.FILE_PATH? 'http://mrra.telkom.co.id/gis/assets'+img.FILE_PATH:"",
+        FILE_PATH: img.FILE_PATH? baseUrlImage+img.FILE_PATH:"",
         FILE_SIZE: img.FILE_SIZE?img.FILE_SIZE:0,
     }
 }
@@ -173,7 +175,7 @@ function transformLahanMaster(lahan){
     DISTANCE:lahan.DISTANCE,
     NAMA_KLASIFIKASI: lahan.NAMA_KLASIFIKASI_ALIAS?lahan.NAMA_KLASIFIKASI_ALIAS:"",
     NAMA_STATUS_KEPEMILIKAN: lahan.NAMA_STATUS_KEPEMILIKAN?lahan.NAMA_STATUS_KEPEMILIKAN:"",
-    PATH_LAHAN_IMAGE: lahan.PATH_LAHAN_IMAGE? 'http://mrra.telkom.co.id/gis/assets'+lahan.PATH_LAHAN_IMAGE:"",
+    PATH_LAHAN_IMAGE: lahan.PATH_LAHAN_IMAGE? baseUrlImage+lahan.PATH_LAHAN_IMAGE:"",
     }
 }
   

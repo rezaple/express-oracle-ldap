@@ -270,6 +270,34 @@ async function updateRequestAssetGedung(req, res, next) {
   }
 }
 
+async function uploadImageLahanForm(req, res, next){
+  try {
+    const file = req.files
+    if (!file || file.length < 1) {
+      const error = new Error('Please upload a file')
+      error.status = 400
+      return next(error)
+    }
+    const context = {
+      id: parseInt(req.params.id, 10),
+      images:file,
+      nik: req.currentUser.nik,
+      type: 'LAHAN',
+      created_date:getDate()
+    };
+    const rows = await reqAsset.uploadLahanForm(context);
+    res.status(200).json({
+      status:200,
+      data:rows,
+    });
+  } catch (err) {
+    res.status(err.status || 500).json({
+      status:err.status||500,
+      message:err.message
+    });
+  }
+}
+
 async function uploadImageLahan(req, res, next){
   try {
     const context = {
@@ -283,6 +311,34 @@ async function uploadImageLahan(req, res, next){
     res.status(200).json({
       status:200,
 			data:rows,
+    });
+  } catch (err) {
+    res.status(err.status || 500).json({
+      status:err.status||500,
+      message:err.message
+    });
+  }
+}
+
+async function uploadImageGedungForm(req, res, next){
+  try {
+    const file = req.files
+    if (!file || file.length < 1) {
+      const error = new Error('Please upload a file')
+      error.status = 400
+      return next(error)
+    }
+    const context = {
+      id: parseInt(req.params.id, 10),
+      images:file,
+      nik: req.currentUser.nik,
+      type: 'GEDUNG',
+      created_date:getDate()
+    };
+    const rows = await reqAsset.uploadGedungForm(context);
+    res.status(200).json({
+      status:200,
+      data:rows,
     });
   } catch (err) {
     res.status(err.status || 500).json({
@@ -352,7 +408,8 @@ module.exports = {
   getAssetLahan,
   getAssetGedung,
   uploadImageLahan,
-  uploadImageGedung,
+  uploadImageLahanForm,
+  uploadImageGedung,uploadImageGedungForm,
   listRequestGedung,
   listRequestLahan,
   deleteImage
