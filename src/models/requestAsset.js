@@ -132,12 +132,12 @@ async function listRequestLahan(req)
  * dibuat pagination jika liat request selengkapnya
  */
 async function getListLahan(nik){
-  let query =`SELECT a.ID, a.IDAREAL, a.NAMA_LAHAN, a.ALAMAT, a.STATUS_REQUEST, a.REQUEST_DATE, MAX(b.FILE_PATH) AS PATH_FILE
+  let query =`SELECT * FROM (SELECT a.ID, a.IDAREAL, a.NAMA_LAHAN, a.ALAMAT, a.STATUS_REQUEST, a.REQUEST_DATE, MAX(b.FILE_PATH) AS PATH_FILE
   FROM LA_REQUEST_LAHAN a
   LEFT JOIN LA_REQUEST_ATTACHMENT b ON a.ID=b.IDREQUEST AND TYPE='LAHAN' 
-  WHERE ROWNUM <= 2 AND REQUEST_BY=${nik}
+  WHERE REQUEST_BY=${nik}
   GROUP BY a.ID, a.IDAREAL, a.NAMA_LAHAN, a.ALAMAT, a.STATUS_REQUEST, a.REQUEST_DATE
-  ORDER BY a.REQUEST_DATE DESC`;
+  ORDER BY a.REQUEST_DATE DESC) WHERE ROWNUM <= 2`;
 
   const result = await database.simpleExecute(query, {});
 
@@ -148,12 +148,12 @@ async function getListLahan(nik){
 }
 
 async function getListGedung(nik){
-  let query =`SELECT a.ID, a.IDGEDUNG, a.NAMA, a.ALAMAT, a.STATUS_REQUEST, a.REQUEST_DATE, MAX(b.FILE_PATH) AS PATH_FILE
+  let query =`SELECT * FROM (SELECT a.ID, a.IDGEDUNG, a.NAMA, a.ALAMAT, a.STATUS_REQUEST, a.REQUEST_DATE, MAX(b.FILE_PATH) AS PATH_FILE
   FROM LA_REQUEST_GEDUNG a
   LEFT JOIN LA_REQUEST_ATTACHMENT b ON a.ID=b.IDREQUEST AND TYPE='GEDUNG' 
-  WHERE ROWNUM <= 2 AND REQUEST_BY=${nik}
+  WHERE REQUEST_BY=${nik}
   GROUP BY a.ID, a.IDGEDUNG, a.NAMA, a.ALAMAT, a.STATUS_REQUEST, a.REQUEST_DATE
-  ORDER BY a.REQUEST_DATE DESC`;
+  ORDER BY a.REQUEST_DATE DESC) WHERE ROWNUM <= 1`;
 
   const result = await database.simpleExecute(query, {});
 
