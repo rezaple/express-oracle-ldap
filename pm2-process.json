@@ -1,0 +1,9 @@
+{
+    "script": "index.js",
+    "watch": true,
+    "ignore_watch": ["node_modules", "public/images", "public/sheets"],
+    "watch_options": {
+        "followSymlinks": false
+    },
+    "name": "MyAssist"
+}
