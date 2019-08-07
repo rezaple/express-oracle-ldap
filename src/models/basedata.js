@@ -37,7 +37,7 @@ async function getStatusKepemilikan()
 
 async function getStatusPenggunaan()
 {
-  let query ="SELECT ID, NAMA, ALIAS FROM LA_PENGGUNAAN WHERE IS_FILTER=1";
+  let query ="SELECT ID, NAMA, ALIAS FROM LA_PENGGUNAAN WHERE IS_FILTER=1 ORDER BY ID";
   const binds = {};
 
   const result = await database.simpleExecute(query, binds);
