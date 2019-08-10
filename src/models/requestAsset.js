@@ -38,13 +38,13 @@ async function listRequestGedung(req)
     const sql=`
     SELECT
       a.ID, a.NAMA, a.IDGEDUNG, a.ALAMAT, a.STATUS_REQUEST, a.REQUEST_DATE, s2.PATH_FILE,
-      ROW_NUMBER() OVER (ORDER BY a.ID) RN
+      ROW_NUMBER() OVER (ORDER BY a.REQUEST_DATE DESC) RN
     FROM
       LA_REQUEST_GEDUNG a
     LEFT OUTER JOIN (SELECT IDREQUEST, MAX(FILE_PATH) PATH_FILE 
 			FROM LA_REQUEST_ATTACHMENT WHERE "TYPE"='GEDUNG' GROUP BY IDREQUEST ) s2
      ON a.ID = s2.IDREQUEST WHERE a.REQUEST_BY=${req.currentUser.nik} 
-     AND (a.IDGEDUNG IS NOT NULL OR a.ID_REQUEST_LAHAN IS NOT NULL) ORDER BY a.REQUEST_DATE DESC`;
+     AND (a.IDGEDUNG IS NOT NULL OR a.ID_REQUEST_LAHAN IS NOT NULL)`;
 
     const totalQuery = await database.simpleExecute(`SELECT count(*) as total_count FROM(${sql})`, {});
     const total= totalQuery.rows[0].TOTAL_COUNT;
@@ -90,12 +90,12 @@ async function listRequestLahan(req)
     const sql=`
     SELECT
       a.ID, a.IDAREAL, a.NAMA_LAHAN as NAMA, a.ALAMAT, a.STATUS_REQUEST, a.REQUEST_DATE, s2.PATH_FILE,
-      ROW_NUMBER() OVER (ORDER BY a.ID) RN
+      ROW_NUMBER() OVER (ORDER BY a.REQUEST_DATE DESC) RN
     FROM
       LA_REQUEST_LAHAN a
     LEFT OUTER JOIN (SELECT IDREQUEST, MAX(FILE_PATH) PATH_FILE 
 			FROM LA_REQUEST_ATTACHMENT WHERE "TYPE"='LAHAN' GROUP BY IDREQUEST ) s2
-     ON a.ID = s2.IDREQUEST WHERE a.REQUEST_BY=${req.currentUser.nik} ORDER BY a.REQUEST_DATE DESC`;
+     ON a.ID = s2.IDREQUEST WHERE a.REQUEST_BY=${req.currentUser.nik}`;
 
     const totalQuery = await database.simpleExecute(`SELECT count(*) as total_count FROM(${sql})`, {});
     const total= totalQuery.rows[0].TOTAL_COUNT;
