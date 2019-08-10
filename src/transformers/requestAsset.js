@@ -4,7 +4,7 @@ const { baseUrlImageAmc } = require('../config/web-server.js');
 function transformList(data){
     return {
         ID: data.ID,
-        NAMA: data.NAMA,
+        NAMA: data.NAMA_LAHAN || data.NAMA,
         ALAMAT: data.ALAMAT||"",
         PATH : (data.PATH_FILE !== undefined && data.PATH_FILE!=="" && data.PATH_FILE) ? baseUrlImageAmc+data.PATH_FILE:"",
         STATUS: data.STATUS_REQUEST,
