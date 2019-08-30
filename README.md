@@ -1,5 +1,7 @@
 # Setup
 
-Install `mongodb`. In root folder run `yarn`.
+Run `npm install`
 
 Rename `env-sample` to `.env` and change it to your liking.
+
+Run `npm run dev`
