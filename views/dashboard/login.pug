@@ -2,14 +2,14 @@ doctype html
 html
 	head
 		include includes/_head.pug
-		title Login - MyAssist Admin
+		title Login - MyApp Admin
 
 	body
 		section.material-half-bg
 			.cover
 
 		section.login-content
-			.logo: h1 MyAssist
+			.logo: h1 MyApp
 
 			.login-box
 				form.login-form(action=baseUrl+'/login', method='POST')
@@ -23,8 +23,8 @@ html
 							| #{messages.info}
 
 					.form-group
-						label.control-label NIK
-						input.form-control(name="nik", type="text", placeholder="NIK", autofocus)
+						label.control-label Username
+						input.form-control(name="username", type="text", placeholder="NIK", autofocus)
 
 					.form-group
 						label.control-label Kata sandi

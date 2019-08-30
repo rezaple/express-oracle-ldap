@@ -1,14 +1,8 @@
 const express = require('express');
 const router = new express.Router();
 const jwt = require("jsonwebtoken");
-const basedata = require('../controllers/basedata');
 const auth = require('../controllers/auth');
-const summary = require('../controllers/summary');
 const area = require('../controllers/area');
-const lahan = require('../controllers/lahan');
-const gedung = require('../controllers/gedung');
-const requestAsset = require('../controllers/requestAsset');
-const dashboard = require('../controllers/dashboard');
 const multer = require('multer');
 
 const storage = multer.diskStorage({
@@ -34,20 +28,7 @@ const upload = multer({
       },
       fileFilter: fileFilter
 });
-router.route('/basedata/regional')
-      .get(basedata.getRegional);
-router.route('/basedata/regional/:id/witel')
-      .get(basedata.getWitel);
-router.route('/basedata/witel')
-      .get(basedata.getWitel);
-// router.route('/basedata/status-kepemilikan')
-//       .get(basedata.getStatusKepemilikan);
-router.route('/basedata/penggunaan')
-      .get(basedata.getPenggunaan);
-router.route('/basedata/analisis-score')
-      .get(basedata.getAnalisisScore);
-router.route('/basedata/status-sertifikat')
-      .get(basedata.getStatusSertifikat);
+
 router.route('/provinsi')
       .get(area.getProvinces);
 router.route('/provinsi/:idProv/kota')
@@ -80,64 +61,6 @@ router.use(function (req, res, next) {
     });
   }
 });
-router.get('/lahan', lahan.getAll);
-router.get('/lahan/aset', lahan.getDetailAsetLahan);
-router.route('/lahan/:id')
-      .get(lahan.getDetail);
-router.route('/gedung')
-      .get(gedung.getAll);
-router.get('/gedung/aset', gedung.getDetailAsetGedung);
-router.route('/gedung/:id')
-      .get(gedung.getDetail);
-router.route('/gedung/:id/listrik')
-      .get(gedung.getTagihanListrik);
-router.route('/gedung/:id/air')
-      .get(gedung.getTagihanAir);
-router.route('/summary')
-      .get(summary.getSummary);
-router.route('/sengketa/aset')
-      .get(summary.getDetailSengketaAset);
-router.route('/klasifikasi/aset')
-      .get(summary.getDetailKlasifikasiAset);
-router.route('/status-tanah/aset')
-      .get(summary.getDetailStatusTanah);
-
-router.route('/request-assets')
-      .get(requestAsset.listAssets);
-router.route('/request-lahan')
-      .get(requestAsset.listRequestLahan);
-router.route('/request-gedung')
-      .get(requestAsset.listRequestGedung);
-router.route('/request-gedung/:id')
-      .get(requestAsset.getRequestAssetGedung);
-router.route('/lahan/:id/edit')
-      .get(requestAsset.getAssetLahan);
-router.route('/gedung/:id/edit')
-      .get(requestAsset.getAssetGedung);
-router.route('/request-lahan/:id')
-      .get(requestAsset.getRequestAssetLahan);
-router.route('/request-lahan/:id/upload')
-      .post(requestAsset.uploadImageLahan);
-router.route('/request-gedung/:id/upload')
-      .post(requestAsset.uploadImageGedung);
-router.post('/request-lahan/:id/upload-form', upload.array('images',5),requestAsset.uploadImageLahanForm);
-router.post('/request-gedung/:id/upload-form',upload.array('images',5),requestAsset.uploadImageGedungForm);
-router.route('/image/:id/delete')
-      .post(requestAsset.deleteImage);
-router.post(
-      '/request-lahan', 
-      requestAsset.validate('createLahan'), 
-      requestAsset.storeRequestAssetLahan)
-router.post(
-      '/request-lahan/:id', 
-      requestAsset.validate('createLahan'), 
-      requestAsset.updateRequestAssetLahan)
-router.post(
-      '/request-gedung', 
-      requestAsset.validate('createGedung'), 
-      requestAsset.storeRequestAssetGedung)
-router.post(
-      '/request-gedung/:id', 
-      requestAsset.validate('createGedung'), 
-      requestAsset.updateRequestAssetGedung)
+//route if need authentication
+//router.get('/example', example.getAll);
 module.exports = router;

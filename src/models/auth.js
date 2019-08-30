@@ -4,7 +4,7 @@ const ldap = require('ldapjs');
 async function ldapLogin(context){ 
   let isAuthenticateUser = false
   var client = ldap.createClient({
-    url: 'ldap://ldap01a.telkom.co.id'
+    url: 'ldap'
   });
 
   client.on('connect', function () {

@@ -20,21 +20,6 @@ aside.app-sidebar
 				i.treeview-indicator.fa.fa-angle-right
 			ul.treeview-menu
 				li
-					a.treeview-item(href='upload-nka' class={'active': activePage == 'upload-nka'})
+					a.treeview-item(href='upload' class={'active': activePage == 'upload'})
 						i.icon.fa.fa-file-excel-o
-						|  Upload NKA
-
-		li.treeview(class={'is-expanded': activeGroup == 'ui-request'})
-			a.app-menu__item(href='#', data-toggle='treeview')
-				i.app-menu__icon.fa.fa-bookmark
-				span.app-menu__label Request Asset
-				i.treeview-indicator.fa.fa-angle-right
-			ul.treeview-menu
-				li
-					a.treeview-item(href='request-lahan' class={'active': activePage == 'request-lahan'})
-						i.icon.fa.fa-map-o
-						|  Lahan
-				li
-					a.treeview-item(href='request-gedung' class={'active': activePage == 'request-gedung'})
-						i.icon.fa.fa-building-o
-						|  Gedung
+						|  Upload Form

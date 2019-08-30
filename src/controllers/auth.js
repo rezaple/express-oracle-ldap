@@ -5,22 +5,22 @@ const ldap = require('ldapjs');
 async function login(req, res, next) {
   
   try {
-    if (!req.body.nik || !req.body.password) {
+    if (!req.body.username || !req.body.password) {
       res.status(400).json({
         status:400,
         message:req.body,
       });
     }else{
       const context = {};
-      context.nik = req.body.nik;
+      context.nik = req.body.username;
       context.password = req.body.password;
 
       var client = ldap.createClient({
-        url: 'ldap://ldap01a.telkom.co.id'
+        url: 'ldap://'
       });
     
       client.on('connect', function () {
-        client.bind(context.nik, context.password, function(err) {
+        client.bind(context.username, context.password, function(err) {
           if (err) {
             res.status(401).json({
               status:401,
@@ -46,10 +46,10 @@ async function login(req, res, next) {
   }
 }
 
-function generateToken(nik){
+function generateToken(username){
     return jwt.sign(
       {
-        nik: nik,
+        username: username,
         iat: Math.floor(Date.now() / 1000),
         exp: Math.floor(Date.now() / 1000) + 1296000
       },

@@ -1,18 +1,18 @@
 extends layouts/_layout.pug
 
 block variables
-	- var activePage = 'upload-nka'
+	- var activePage = 'upload'
 	- var activeGroup = 'ui-upload'
 
 block title
-	title Upload NKA
+	title Upload Form
 
 block content
 	.app-title
 		div
 			h1
 				i.fa.fa-edit
-				|  Upload NKA
+				|  Upload Form
 
 		ul.app-breadcrumb.breadcrumb
 			li.breadcrumb-item
@@ -20,11 +20,11 @@ block content
 			li.breadcrumb-item
 				| Upload Dokumen
 			li.breadcrumb-item
-				a(href="#") Upload NKA
+				a(href="#") Upload Form
 
 	.row
 		.col-md-12
-			form(method="post",enctype="multipart/form-data",action=baseUrl+"/upload-nka")
+			form(method="post",enctype="multipart/form-data",action=baseUrl+"/upload")
 				.tile
 					h3.tile-title Form Upload
 					.tile-body
@@ -39,14 +39,14 @@ block content
 								| #{messages.error}
 
 						.form-group
-							label.control-label NKA File
+							label.control-label Document File
 							input.form-control(name="file",type="file")
 
 						.form-group
 							.form-check
 								label.form-check-label
 									span Contoh format : 
-										a(href="http://mrra.telkom.co.id/gis/assets/uploads/dbaset/template_upload_nka.xlsx") Download
+										a(href="#") Download
 									br
 									| Baris pertama harus diisi nama kolom dari tabel yang akan digunakan
 									br

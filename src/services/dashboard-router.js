@@ -31,20 +31,8 @@ router.get('/home', dashboard.showHome);
 router.get('/login', dashboard.showLogin)
 router.post('/login', dashboard.login);
 router.get('/logout', dashboard.logout);
-router.get('/upload-nka', dashboard.showUploadNKA);
-router.post('/upload-nka',upload.single('file'), dashboard.uploadNKA2);
-router.get('/request-lahan', dashboard.showRequestLahan);
-router.get('/request-lahan/:id', dashboard.showDetailRequestLahan);
-router.get('/request-gedung', dashboard.showRequestGedung);
-router.get('/request-gedung/:id', dashboard.showDetailRequestGedung);
-
-router.post('/request-gedung/:id/accept', dashboard.acceptRequestGedung);
-router.post('/request-gedung/:id/decline', dashboard.declineRequestGedung);
-router.post('/request-gedung/:id/revisi', dashboard.revisiRequestGedung);
-
-router.post('/request-lahan/:id/accept', dashboard.acceptRequestLahan);
-router.post('/request-lahan/:id/decline', dashboard.declineRequestLahan);
-router.post('/request-lahan/:id/revisi', dashboard.revisiRequestLahan);
+router.get('/upload', dashboard.showUpload);
+router.post('/upload',upload.single('file'), dashboard.upload);
 
 router.get('/:page', function(req, res){
       res.render(`dashboard/${req.params.page}`)
